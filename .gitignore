@@ -1,16 +1,19 @@
 # Dependencies
-node_modules
-.pnp
-.pnp.js
+frontend/node_modules
+frontend/.pnp
+frontend/.pnp.js
 
 # Testing
-coverage
+frontend/coverage
 
 # Next.js
-.next/
-out/
-build
-dist
+frontend/.next/
+frontend/out/
+frontend/build
+frontend/dist
+
+# Keep Next.js TypeScript declaration file
+!frontend/next-env.d.ts
 
 # Misc
 .DS_Store

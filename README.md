@@ -1,7 +1,6 @@
 # AI Travel Planner
 
-An intelligent travel planning system that generates personalized itineraries based on user preferences, available flights, budget constraints, and current travel offers.
-
+An intelligent travel planning system that generates personalized itineraries and their suggested scheduled activities based on user preferences for traveling.
 ## Project Structure
 
 ```

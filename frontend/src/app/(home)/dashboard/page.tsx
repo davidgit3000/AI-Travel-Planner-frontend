@@ -3,11 +3,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function Dashboard() {
+export default function DashboardPage() {
   return (
     <div className="w-full md:w-2/3 p-6 space-y-6">
       {/* Welcome Header */}
-      <h1 className="px-4 md:px-0 text-3xl font-bold">Welcome back, David!</h1>
+      <h1 className="px-12 md:px-0 text-3xl font-bold">Welcome back, David!</h1>
 
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">

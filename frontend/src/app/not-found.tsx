@@ -11,10 +11,10 @@ export default function NotFound() {
           Could not find the requested resource
         </p>
         <Link
-          href="/"
+          href="/dashboard"
           className="text-blue-600 hover:underline dark:text-blue-400"
         >
-          Return Home
+          Return to Dashboard
         </Link>
       </main>
     </div>

@@ -7,14 +7,16 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full bg-white text-black">
       {/* Header */}
-      <header className="w-full flex items-center justify-between px-6 py-4 bg-transparent absolute top-0 z-50">
+      <header className="w-full flex items-center justify-between px-6 py-4 bg-transparent absolute top-0 z-100">
         <div className="text-lg font-semibold text-white bg-black/60 px-3 py-1 rounded shadow">
-          TripMate AI
+          <Link href="/">
+            TripMate AI
+          </Link>
         </div>
         <div>
-          <Link href="/login">
-            <Button variant="outline" className="bg-white/80 text-black font-medium hover:bg-white">
-              Sign In
+          <Link href="/sign-in">
+            <Button className="text-md cursor-pointer text-black font-medium shadow-md hover:bg-blue-500 hover:text-white">
+              Sign in
             </Button>
           </Link>
         </div>
@@ -22,19 +24,22 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        className="w-full h-[90vh] bg-cover bg-center flex flex-col justify-center items-center text-center px-4"
+        className="w-full h-[90vh] bg-cover bg-center flex flex-col justify-center items-center text-center px-4 relative"
         style={{
           backgroundImage:
             'url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1650&q=80")',
         }}
       >
-        <h1 className="text-4xl md:text-6xl font-bold text-white drop-shadow-xl">
-          Your AI Travel Companion
-        </h1>
-        <p className="mt-4 text-lg md:text-xl text-white max-w-2xl">
-          Experience personalized travel planning powered by artificial intelligence. Create your perfect journey in minutes.
-        </p>
-        <Button className="mt-6 text-lg px-6 py-4">Start Planning</Button>
+        <div className="absolute inset-0 backdrop-blur-[2px] bg-black/20"></div>
+        <div className="relative z-10 text-white">
+          <h1 className="text-4xl md:text-6xl font-extrabold drop-shadow-xl">
+            Your AI Travel Companion
+          </h1>
+          <p className="mt-4 text-lg md:text-xl font-semibold max-w-2xl">
+            Experience personalized travel planning powered by artificial intelligence. Create your perfect journey in minutes.
+          </p>
+          <Button className="mt-6 text-lg px-6 p-6 cursor-pointer shadow-md hover:bg-blue-500 hover:text-white">Start Planning</Button>
+        </div>
       </section>
 
       {/* Why Choose TripMate AI Section */}

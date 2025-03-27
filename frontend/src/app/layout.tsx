@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Header } from "@/components/header/Header";
+import { AppSidebar } from "@/components/sidebar-menu/AppSidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggler } from "@/components/mode-toggle/ModeToggler";
 import { Footer } from "@/components/footer/Footer";
@@ -40,7 +40,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SidebarProvider>
-            <Header />
+            <AppSidebar />
             <div className="fixed top-4 right-4 z-50">
               <ModeToggler />
             </div>

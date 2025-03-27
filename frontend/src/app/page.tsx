@@ -15,7 +15,7 @@ export default function Home() {
         </div>
         <div>
           <Link href="/sign-in">
-            <Button className="text-md cursor-pointer text-black font-medium shadow-md hover:bg-blue-500 hover:text-white">
+            <Button className="text-md cursor-pointer bg-white text-black font-medium shadow-md hover:bg-blue-500 hover:text-white">
               Sign in
             </Button>
           </Link>

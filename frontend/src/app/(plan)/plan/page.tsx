@@ -19,9 +19,11 @@ export default function PlanPage() {
 
   const [basicInfo, setBasicInfo] = useState<BasicInfoType>({
     destination: "",
+    searchRadius: 50,
     startDate: "",
     endDate: "",
     travelers: 0,
+    searchType: "city",
   });
 
   const [accommodations, setAccommodations] = useState<AccommodationType>(() => 

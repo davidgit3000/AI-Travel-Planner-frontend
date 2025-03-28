@@ -9,13 +9,11 @@ export default function Home() {
       {/* Header */}
       <header className="w-full flex items-center justify-between px-6 py-4 bg-transparent absolute top-0 z-100">
         <div className="text-lg font-semibold text-white bg-black/60 px-3 py-1 rounded shadow">
-          <Link href="/">
-            TripMate AI
-          </Link>
+          <Link href="/">TripMate AI</Link>
         </div>
         <div>
           <Link href="/sign-in">
-            <Button className="text-md cursor-pointer text-black font-medium shadow-md hover:bg-blue-500 hover:text-white">
+            <Button className="text-md bg-white cursor-pointer text-black font-medium shadow-md hover:bg-blue-500 hover:text-white">
               Sign in
             </Button>
           </Link>
@@ -36,9 +34,12 @@ export default function Home() {
             Your AI Travel Companion
           </h1>
           <p className="mt-4 text-lg md:text-xl font-semibold max-w-2xl">
-            Experience personalized travel planning powered by artificial intelligence. Create your perfect journey in minutes.
+            Experience personalized travel planning powered by artificial
+            intelligence. Create your perfect journey in minutes.
           </p>
-          <Button className="mt-6 text-lg px-6 p-6 cursor-pointer shadow-md hover:bg-blue-500 hover:text-white">Start Planning</Button>
+          <Button className="mt-6 text-lg px-6 p-6 cursor-pointer shadow-md hover:bg-blue-500 hover:text-white bg-white">
+            Start Planning
+          </Button>
         </div>
       </section>
 
@@ -50,9 +51,12 @@ export default function Home() {
           <Card className="shadow-xl">
             <CardContent className="p-6 flex flex-col items-center">
               <Brain className="w-12 h-12 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">AI-Powered Planning</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                AI-Powered Planning
+              </h3>
               <p className="text-sm text-gray-600">
-                Our AI agent analyzes millions of travel data points to create the perfect itinerary for you.
+                Our AI agent analyzes millions of travel data points to create
+                the perfect itinerary for you.
               </p>
             </CardContent>
           </Card>
@@ -61,9 +65,12 @@ export default function Home() {
           <Card className="shadow-xl">
             <CardContent className="p-6 flex flex-col items-center">
               <ClipboardList className="w-12 h-12 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Personalized Experience</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                Personalized Experience
+              </h3>
               <p className="text-sm text-gray-600">
-                Get recommendations tailored to your interests, travel style, and budget constraints.
+                Get recommendations tailored to your interests, travel style,
+                and budget constraints.
               </p>
             </CardContent>
           </Card>
@@ -74,7 +81,8 @@ export default function Home() {
               <CheckCircle className="w-12 h-12 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Real-time Updates</h3>
               <p className="text-sm text-gray-600">
-                Stay informed with live updates about your destination, weather, and travel conditions.
+                Stay informed with live updates about your destination, weather,
+                and travel conditions.
               </p>
             </CardContent>
           </Card>

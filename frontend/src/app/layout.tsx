@@ -44,7 +44,7 @@ export default function RootLayout({
             <div className="fixed top-4 right-4 z-50">
               <ModeToggler />
             </div>
-            <main className="w-full flex flex-col items-center">
+            <main className="w-full min-h-screen flex flex-col items-center">
               {children}
               <Footer />
             </main>

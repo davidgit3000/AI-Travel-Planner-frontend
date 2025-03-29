@@ -41,7 +41,7 @@ export function AppSidebar() {
     { href: "/dashboard", label: "Dashboard", icon: <HomeIcon /> },
     { href: "/plan", label: "Plan a Trip", icon: <PlusCircleIcon /> },
     { href: "/history", label: "History", icon: <ClockIcon /> },
-    { href: "/payment", label: "Payment", icon: <CreditCardIcon /> },
+    // { href: "/payment", label: "Payment", icon: <CreditCardIcon /> },
     { href: "/profile", label: "My Profile", icon: <UserIcon /> },
   ];
 

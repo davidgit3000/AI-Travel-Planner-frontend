@@ -37,11 +37,11 @@ const trips = [
 
 export default function HistoryPage() {
   return (
-    <div className="p-6 w-full">
-      <h1 className="text-3xl font-bold underline text-gray-900 dark:text-gray-100 mb-6 text-center">
+    <div className="px-20 py-10 w-full">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
         Trip History
       </h1>
-      <div className="overflow-x-auto w-full">
+      <div className="overflow-x-auto w-full rounded-t-xl">
         <table className="w-full max-w-[90rem] mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
           <thead>
             <tr className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-left text-sm font-semibold">
@@ -71,8 +71,8 @@ export default function HistoryPage() {
                   {trip.dateTo}
                 </td>
                 <td className="px-6 py-4">
-                  <Link href="/history/historydetail">
-                    <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700">
+                  <Link href="/history/1">
+                    <Button className="bg-gradient-to-r cursor-pointer from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700">
                       View Details
                     </Button>
                   </Link>

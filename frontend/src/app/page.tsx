@@ -51,12 +51,9 @@ export default function Home() {
           <Card className="shadow-xl">
             <CardContent className="p-6 flex flex-col items-center">
               <Brain className="w-12 h-12 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                AI-Powered Planning
-              </h3>
-              <p className="text-sm text-gray-600">
-                Our AI agent analyzes millions of travel data points to create
-                the perfect itinerary for you.
+              <h3 className="text-xl font-semibold mb-2">AI-Powered Planning</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Our AI agent analyzes millions of travel data points to create the perfect itinerary for you.
               </p>
             </CardContent>
           </Card>
@@ -65,12 +62,9 @@ export default function Home() {
           <Card className="shadow-xl">
             <CardContent className="p-6 flex flex-col items-center">
               <ClipboardList className="w-12 h-12 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                Personalized Experience
-              </h3>
-              <p className="text-sm text-gray-600">
-                Get recommendations tailored to your interests, travel style,
-                and budget constraints.
+              <h3 className="text-xl font-semibold mb-2">Personalized Experience</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Get recommendations tailored to your interests, travel style, and budget constraints.
               </p>
             </CardContent>
           </Card>
@@ -80,9 +74,8 @@ export default function Home() {
             <CardContent className="p-6 flex flex-col items-center">
               <CheckCircle className="w-12 h-12 mb-4" />
               <h3 className="text-xl font-semibold mb-2">Real-time Updates</h3>
-              <p className="text-sm text-gray-600">
-                Stay informed with live updates about your destination, weather,
-                and travel conditions.
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Stay informed with live updates about your destination, weather, and travel conditions.
               </p>
             </CardContent>
           </Card>

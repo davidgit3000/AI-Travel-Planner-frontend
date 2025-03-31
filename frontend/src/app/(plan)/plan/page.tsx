@@ -1,61 +1,98 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AccommodationPreferences, { AccommodationType } from "@/components/plan/AccommodationPreferences";
-import BasicInfo, { BasicInfoType } from "@/components/plan/BasicInfo";
+import AccommodationPreferences, {
+  AccommodationType,
+} from "@/components/plan/AccommodationPreferences";
+import BasicInfo from "@/components/plan/BasicInfo";
 import TripStyles, { TripStylesType } from "@/components/plan/TripStyles";
-import DiningPreferences, { DiningType } from "@/components/plan/DiningPreferences";
-import { accommodationList, tripStylesList, diningList, activityList, transportationList } from "@/data/data";
-import ActivityPreferences, { ActivityType } from "@/components/plan/ActivityPreferences";
-import TransporationPreferences, { TransportationType } from "@/components/plan/TransporationPreferences";
+import DiningPreferences, {
+  DiningType,
+} from "@/components/plan/DiningPreferences";
+import {
+  accommodationList,
+  tripStylesList,
+  diningList,
+  activityList,
+  transportationList,
+} from "@/data/data";
+import ActivityPreferences, {
+  ActivityType,
+} from "@/components/plan/ActivityPreferences";
+import TransporationPreferences, {
+  TransportationType,
+} from "@/components/plan/TransporationPreferences";
 import { cn } from "@/lib/utils";
 
-export default function PlanPage() {
-  const createInitialState = <T extends { [key: string]: boolean }>(list: { value: string }[]): T => 
-    Object.fromEntries(list.map(item => [item.value, false])) as T;
+import { useTripPlan } from "@/context/TripPlanContext";
 
-  const [basicInfo, setBasicInfo] = useState<BasicInfoType>({
-    destination: "",
-    searchRadius: 50,
-    startDate: "",
-    endDate: "",
-    travelers: 0,
-    searchType: "city",
+// ---------- TODO: Make Tab responsive in mobile view ----------
+export default function PlanPage() {
+  const router = useRouter();
+  const { plan, setPlan } = useTripPlan();
+
+  const createInitialState = <T extends { [key: string]: boolean }>(
+    list: { value: string }[]
+  ): T => Object.fromEntries(list.map((item) => [item.value, false])) as T;
+
+  const [basicInfo, setBasicInfo] = useState({
+    destination: plan.destination || "",
+    searchRadius: plan.searchRadius || 50,
+    startDate: plan.startDate || "",
+    endDate: plan.endDate || "",
+    travelers: plan.travelers || 0,
+    searchType: plan.searchType || "city",
   });
 
-  const [accommodations, setAccommodations] = useState<AccommodationType>(() => 
-    createInitialState<AccommodationType>(accommodationList));
+  const [accommodations, setAccommodations] = useState<AccommodationType>(
+    plan.accommodations && Object.keys(plan.accommodations).length > 0
+      ? (plan.accommodations as AccommodationType)
+      : createInitialState<AccommodationType>(accommodationList)
+  );
 
-  const [tripStyles, setTripStyles] = useState<TripStylesType>(() => 
-    createInitialState<TripStylesType>(tripStylesList));
+  const [tripStyles, setTripStyles] = useState<TripStylesType>(
+    plan.tripStyles && Object.keys(plan.tripStyles).length > 0
+      ? (plan.tripStyles as TripStylesType)
+      : createInitialState<TripStylesType>(tripStylesList)
+  );
 
-  const [dining, setDining] = useState<DiningType>(() => 
-    createInitialState<DiningType>(diningList));
+  const [dining, setDining] = useState<DiningType>(
+    plan.dining && Object.keys(plan.dining).length > 0
+      ? (plan.dining as DiningType)
+      : createInitialState<DiningType>(diningList)
+  );
 
-  const [transportation, setTransportation] = useState<TransportationType>(() => 
-    createInitialState<TransportationType>(transportationList));
+  const [transportation, setTransportation] = useState<TransportationType>(
+    plan.transportation && Object.keys(plan.transportation).length > 0
+      ? (plan.transportation as TransportationType)
+      : createInitialState<TransportationType>(transportationList)
+  );
 
-  const [activities, setActivities] = useState<ActivityType>(() => 
-    createInitialState<ActivityType>(activityList));
+  const [activities, setActivities] = useState<ActivityType>(
+    plan.activities && Object.keys(plan.activities).length > 0
+      ? (plan.activities as ActivityType)
+      : createInitialState<ActivityType>(activityList)
+  );
 
   // Check if all required fields are filled
   const isFormValid = useMemo(() => {
     // Check basic info
-    const isBasicInfoValid = 
-      basicInfo.destination.trim() !== "" && 
-      basicInfo.startDate !== "" && 
-      basicInfo.endDate !== "" && 
+    const isBasicInfoValid =
+      basicInfo.destination.trim() !== "" &&
+      basicInfo.startDate !== "" &&
+      basicInfo.endDate !== "" &&
       basicInfo.travelers > 0;
 
     // Check if at least one option is selected in each preference
-    const hasAccommodation = Object.values(accommodations).some(v => v);
-    const hasTripStyle = Object.values(tripStyles).some(v => v);
-    const hasDining = Object.values(dining).some(v => v);
-    const hasTransportation = Object.values(transportation).some(v => v);
-    const hasActivities = Object.values(activities).some(v => v);
+    const hasAccommodation = Object.values(accommodations).some((v) => v);
+    const hasTripStyle = Object.values(tripStyles).some((v) => v);
+    const hasDining = Object.values(dining).some((v) => v);
+    const hasTransportation = Object.values(transportation).some((v) => v);
+    const hasActivities = Object.values(activities).some((v) => v);
 
     return (
       isBasicInfoValid &&
@@ -65,7 +102,57 @@ export default function PlanPage() {
       hasTransportation &&
       hasActivities
     );
-  }, [basicInfo, accommodations, tripStyles, dining, transportation, activities]);
+  }, [
+    basicInfo,
+    accommodations,
+    tripStyles,
+    dining,
+    transportation,
+    activities,
+  ]);
+
+  // Reset all selected data input
+  const handleReset = () => {
+    const defaultBasicInfo = {
+      destination: "",
+      searchRadius: 50,
+      startDate: "",
+      endDate: "",
+      travelers: 0,
+      searchType: "city" as const,
+    };
+
+    setBasicInfo(defaultBasicInfo);
+    setAccommodations(createInitialState<AccommodationType>(accommodationList));
+    setTripStyles(createInitialState<TripStylesType>(tripStylesList));
+    setDining(createInitialState<DiningType>(diningList));
+    setTransportation(
+      createInitialState<TransportationType>(transportationList)
+    );
+    setActivities(createInitialState<ActivityType>(activityList));
+
+    // Also clear the global plan context
+    setPlan({
+      ...defaultBasicInfo,
+      accommodations: {},
+      tripStyles: {},
+      dining: {},
+      transportation: {},
+      activities: {},
+    });
+  };
+
+  const handleGeneratePlan = () => {
+    setPlan({
+      ...basicInfo,
+      accommodations,
+      tripStyles,
+      dining,
+      transportation,
+      activities,
+    });
+    router.push("/results");
+  };
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-8">
@@ -119,7 +206,7 @@ export default function PlanPage() {
                 transportationList={transportationList}
                 transportation={transportation}
                 setTransportation={setTransportation}
-              />  
+              />
             </TabsContent>
 
             <TabsContent value="dining" className="p-6 md:p-8 space-y-8">
@@ -139,12 +226,22 @@ export default function PlanPage() {
             </TabsContent>
           </Tabs>
         </Card>
-        <div className="flex justify-end">
+
+        <div className="flex justify-end items-center space-x-4">
+          <Button
+            size="lg"
+            onClick={handleReset}
+            className="cursor-pointer text-xs sm:text-lg px-8 transition-all duration-200 bg-red-500 text-white hover:bg-red-400"
+          >
+            Reset All
+          </Button>
+
           <Button
             size="lg"
             disabled={!isFormValid}
+            onClick={handleGeneratePlan}
             className={cn(
-              "px-8 cursor-pointer text-white text-xs sm:text-lg transition-all duration-200",
+              "cursor-pointer px-8 text-white text-xs sm:text-lg transition-all duration-200",
               isFormValid
                 ? "bg-blue-600 hover:bg-blue-500 dark:hover:bg-blue-500"
                 : "bg-slate-400 cursor-not-allowed"

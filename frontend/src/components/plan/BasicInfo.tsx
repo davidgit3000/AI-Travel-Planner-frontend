@@ -22,9 +22,12 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { searchCities, getCachedCountries, debounce } from "@/utils/api";
+import { useTripPlan } from "@/context/TripPlanContext";
 
 export type BasicInfoType = {
   destination: string;
+  cityLabel?: string;
+  countryLabel?: string;
   searchRadius: number;
   startDate: string;
   endDate: string;
@@ -43,6 +46,7 @@ interface Location {
 }
 
 export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
+  const { plan, setPlan } = useTripPlan();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Location[]>([]);
@@ -111,12 +115,27 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
         </Label>
         <Tabs
           value={basicInfo.searchType}
-          onValueChange={(value) => setBasicInfo({ ...basicInfo, searchType: value as "city" | "country" })}
+          onValueChange={(value) =>
+            setBasicInfo({
+              ...basicInfo,
+              searchType: value as "city" | "country",
+            })
+          }
           className="w-full"
         >
           <TabsList className="grid w-full grid-cols-2 h-14">
-            <TabsTrigger value="city" className="px-4 text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400">Search by City</TabsTrigger>
-            <TabsTrigger value="country" className="px-4 text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400">Search by Country</TabsTrigger>
+            <TabsTrigger
+              value="city"
+              className="px-4 text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400"
+            >
+              Search by City
+            </TabsTrigger>
+            <TabsTrigger
+              value="country"
+              className="px-4 text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400"
+            >
+              Search by Country
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="city" className="mt-4">
@@ -128,16 +147,14 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                   aria-expanded={open}
                   className="w-full justify-between border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
-                  {basicInfo.destination
-                    ? searchResults.find((city) => city.value === basicInfo.destination)?.label
-                    : "Search for a city..."}
+                  {basicInfo.cityLabel || plan.destination || "Search for a city..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0">
                 <Command shouldFilter={false}>
-                  <CommandInput 
-                    placeholder="Search cities..." 
+                  <CommandInput
+                    placeholder="Search cities..."
                     onValueChange={handleSearchChange}
                   />
                   <CommandList>
@@ -156,14 +173,23 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                           key={city.value}
                           value={city.value}
                           onSelect={(currentValue) => {
-                            setBasicInfo({ ...basicInfo, destination: currentValue });
+                            const selected = searchResults.find(
+                              (c) => c.value === currentValue
+                            );
+                            setBasicInfo({
+                              ...basicInfo,
+                              destination: selected?.label || "",
+                              cityLabel: selected?.label || "",
+                            });
                             setOpen(false);
                           }}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              basicInfo.destination === city.value ? "opacity-100" : "opacity-0"
+                              basicInfo.cityLabel === city.label
+                                ? "opacity-100"
+                                : "opacity-0"
                             )}
                           />
                           {city.label}
@@ -177,7 +203,9 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
 
             <div className="mt-6 space-y-4">
               <div className="space-y-2">
-                <Label className="text-base text-slate-900 dark:text-slate-100">Search Radius (km)</Label>
+                <Label className="text-base text-slate-900 dark:text-slate-100">
+                  Search Radius (km)
+                </Label>
                 <div className="pt-2">
                   <Slider
                     defaultValue={[50]}
@@ -206,9 +234,7 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                   aria-expanded={open}
                   className="w-full justify-between border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
-                  {basicInfo.destination
-                    ? countries.find((country) => country.value === basicInfo.destination)?.label
-                    : "Select a country..."}
+                  {basicInfo.countryLabel || plan.destination || "Select a country..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -223,14 +249,23 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                           key={country.value}
                           value={country.value}
                           onSelect={(currentValue) => {
-                            setBasicInfo({ ...basicInfo, destination: currentValue });
+                            const selected = countries.find(
+                              (c) => c.value === currentValue
+                            );
+                            setBasicInfo({
+                              ...basicInfo,
+                              destination: selected?.label || "",
+                              countryLabel: selected?.label || "",
+                            });
                             setOpen(false);
                           }}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              basicInfo.destination === country.value ? "opacity-100" : "opacity-0"
+                              basicInfo.destination === country.value
+                                ? "opacity-100"
+                                : "opacity-0"
                             )}
                           />
                           {country.label}
@@ -257,7 +292,9 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
             id="startDate"
             type="date"
             value={basicInfo.startDate}
-            onChange={(e) => setBasicInfo({ ...basicInfo, startDate: e.target.value })}
+            onChange={(e) =>
+              setBasicInfo({ ...basicInfo, startDate: e.target.value })
+            }
             className="w-full border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
         </div>
@@ -272,7 +309,9 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
             id="endDate"
             type="date"
             value={basicInfo.endDate}
-            onChange={(e) => setBasicInfo({ ...basicInfo, endDate: e.target.value })}
+            onChange={(e) =>
+              setBasicInfo({ ...basicInfo, endDate: e.target.value })
+            }
             className="w-full border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
         </div>
@@ -291,7 +330,9 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
           min="1"
           placeholder="Enter number of travelers"
           value={basicInfo.travelers}
-          onChange={(e) => setBasicInfo({ ...basicInfo, travelers: Number(e.target.value) })}
+          onChange={(e) =>
+            setBasicInfo({ ...basicInfo, travelers: Number(e.target.value) })
+          }
           className="w-full border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>

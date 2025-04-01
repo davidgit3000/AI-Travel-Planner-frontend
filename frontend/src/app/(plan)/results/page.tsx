@@ -59,6 +59,13 @@ export default function ResultPage() {
             <p className="text-muted-foreground">
               <strong>Travelers:</strong> {plan.travelers}
             </p>
+            <p className="text-muted-foreground">
+              {plan.searchType === "city" && (
+                <>
+                  <strong>Within:</strong> {plan.searchRadius} miles
+                </>
+              )}
+            </p>
           </div>
           <Button
             onClick={() => router.push("/plan")}
@@ -86,18 +93,18 @@ export default function ResultPage() {
         </div>
 
         <div className="flex flex-wrap gap-6 justify-center sm:justify-start">
-          {tripPlans.map((plan, index) => (
+          {tripPlans.map((_plan, index) => (
             <TripCard
               key={index}
-              destination={plan.destination}
+              destination={_plan.destination}
               days={calculateTripDuration(plan.startDate, plan.endDate)}
-              description={plan.description}
-              imageUrl={plan.imageUrl}
+              description={_plan.description}
+              imageUrl={_plan.imageUrl}
               onClick={() =>
                 router.push(
                   `/results/${encodeURIComponent(
-                    plan.destination.toLowerCase().replace(/, /g, "-")
-                  )}?image=${encodeURIComponent(plan.imageUrl)}&from=${
+                    _plan.destination.toLowerCase().replace(/, /g, "-")
+                  )}?image=${encodeURIComponent(_plan.imageUrl)}&from=${
                     plan.startDate
                   }&to=${plan.endDate}`
                 )

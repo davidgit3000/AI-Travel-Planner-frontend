@@ -155,37 +155,41 @@ export default function PlanPage() {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-8">
+    <div className="container max-w-4xl mx-auto px-4 py-18 md:py-10 space-y-8">
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">Plan Your Trip</h1>
         <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="w-full p-4 h-14 bg-transparent border-b border-slate-200 dark:border-slate-800">
-              <TabsTrigger
-                value="basic"
-                className="h-14 px-4 text-xs md:text-sm data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
-              >
-                Basic Info
-              </TabsTrigger>
-              <TabsTrigger
-                value="preferences"
-                className="h-14 px-4 text-xs md:text-sm data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
-              >
-                Travel Preferences
-              </TabsTrigger>
-              <TabsTrigger
-                value="dining"
-                className="h-14 px-4 text-xs md:text-sm data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
-              >
-                Dining Preferences
-              </TabsTrigger>
-              <TabsTrigger
-                value="activities"
-                className="h-14 px-4 text-xs md:text-sm data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
-              >
-                Activities
-              </TabsTrigger>
-            </TabsList>
+            <div className="relative w-full">
+              <TabsList className="w-full flex-nowrap overflow-x-auto overflow-y-hidden whitespace-nowrap no-scrollbar h-14 bg-transparent border-b border-slate-200 dark:border-slate-800 scroll-p-4">
+                <div className="flex px-2 sm:px-4 min-w-full">
+                  <TabsTrigger
+                    value="basic"
+                    className="px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                  >
+                    Basic Info
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="preferences"
+                    className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                  >
+                    Travel Preferences
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="dining"
+                    className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                  >
+                    Dining Preferences
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="activities"
+                    className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                  >
+                    Activities
+                  </TabsTrigger>
+                </div>
+              </TabsList>
+            </div>
 
             <TabsContent value="basic" className="p-6 md:p-8 space-y-8">
               <BasicInfo basicInfo={basicInfo} setBasicInfo={setBasicInfo} />

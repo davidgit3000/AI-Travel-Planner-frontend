@@ -123,16 +123,16 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
           }
           className="w-full"
         >
-          <TabsList className="grid w-full grid-cols-2 h-14">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 h-14">
             <TabsTrigger
               value="city"
-              className="px-4 text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400"
+              className="px-4 text-xs sm:text-sm text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400"
             >
               Search by City
             </TabsTrigger>
             <TabsTrigger
               value="country"
-              className="px-4 text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400"
+              className="px-4 text-xs sm:text-sm text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400"
             >
               Search by Country
             </TabsTrigger>
@@ -204,7 +204,7 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
             <div className="mt-6 space-y-4">
               <div className="space-y-2">
                 <Label className="text-base text-slate-900 dark:text-slate-100">
-                  Search Radius (km)
+                  Search Radius (miles)
                 </Label>
                 <div className="pt-2">
                   <Slider
@@ -219,7 +219,7 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                   />
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {basicInfo.searchRadius}km radius from city center
+                  {basicInfo.searchRadius} miles radius from city center
                 </p>
               </div>
             </div>

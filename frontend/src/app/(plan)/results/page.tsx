@@ -4,7 +4,8 @@ import { useTripPlan } from "@/context/TripPlanContext";
 import { useRouter } from "next/navigation";
 import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { calculateTripDuration } from "@/utils/helpers";
+import { calculateTripDuration, formatDate } from "@/utils/helpers";
+import SelectionGroup from "@/components/plan/SelectionGroup";
 
 export default function ResultPage() {
   const { plan } = useTripPlan();
@@ -49,7 +50,16 @@ export default function ResultPage() {
           </span>
         </div>
 
-        <div className="w-full sm:w-auto flex justify-end">
+        <div className="w-full sm:w-auto flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-start gap-4 space-x-4">
+            <p className="text-muted-foreground">
+              <strong>Date:</strong> {formatDate(plan.startDate)} -{" "}
+              {formatDate(plan.endDate)}
+            </p>
+            <p className="text-muted-foreground">
+              <strong>Travelers:</strong> {plan.travelers}
+            </p>
+          </div>
           <Button
             onClick={() => router.push("/plan")}
             className="cursor-pointer flex items-center gap-2 text-xs md:text-sm bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-500 transition"
@@ -57,6 +67,22 @@ export default function ResultPage() {
             <Filter className="w-4 h-4" />
             <span className="sr-only sm:not-sr-only">Filter</span>
           </Button>
+        </div>
+
+        <div className="border border-slate-700 dark:border-slate-200 p-4 rounded-lg space-y-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <SelectionGroup
+              label="Accommodations"
+              options={plan.accommodations}
+            />
+            <SelectionGroup label="Trip Styles" options={plan.tripStyles} />
+            <SelectionGroup label="Dining Preferences" options={plan.dining} />
+            <SelectionGroup
+              label="Transportation"
+              options={plan.transportation}
+            />
+            <SelectionGroup label="Activities" options={plan.activities} />
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-6 justify-center sm:justify-start">

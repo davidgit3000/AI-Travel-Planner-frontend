@@ -4,6 +4,7 @@ import { useTripPlan } from "@/context/TripPlanContext";
 import { useRouter } from "next/navigation";
 import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { calculateTripDuration } from "@/utils/helpers";
 
 export default function ResultPage() {
   const { plan } = useTripPlan();
@@ -12,23 +13,26 @@ export default function ResultPage() {
   const tripPlans = [
     {
       destination: "Paris, France",
-      days: 7,
       description: "Immerse yourself in local traditions and historical sites",
       imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34", // Eiffel Tower
+      startDate: "2024-03-15",
+      endDate: "2024-03-22",
     },
     {
       destination: "Tokyo, Japan",
-      days: 7,
       description: "Perfect blend of outdoor activities and scenic spots",
       imageUrl:
         "https://images.squarespace-cdn.com/content/v1/5b228bd689c172172ab88d9c/1501f7d6-87ac-445c-a87b-e9ff9551ccaa/_DSF5280-Enhanced-NR.jpg", // Tokyo cityscape
+      startDate: "2024-03-15",
+      endDate: "2024-03-22",
     },
     {
       destination: "Grand Canyon, Arizona",
-      days: 7,
       description: "Focus on wellness and peaceful experiences",
       imageUrl:
         "https://www.globalnationalparks.com/wp-content/uploads/national-park-grand-canyon.jpg", // Grand Canyon
+      startDate: "2024-03-15",
+      endDate: "2024-03-22",
     },
   ];
 
@@ -60,10 +64,18 @@ export default function ResultPage() {
             <TripCard
               key={index}
               destination={plan.destination}
-              days={plan.days}
+              days={calculateTripDuration(plan.startDate, plan.endDate)}
               description={plan.description}
               imageUrl={plan.imageUrl}
-              onClick={() => router.push(`/results/${index}`)}
+              onClick={() =>
+                router.push(
+                  `/results/${encodeURIComponent(
+                    plan.destination.toLowerCase().replace(/, /g, "-")
+                  )}?image=${encodeURIComponent(plan.imageUrl)}&from=${
+                    plan.startDate
+                  }&to=${plan.endDate}`
+                )
+              }
             />
           ))}
         </div>

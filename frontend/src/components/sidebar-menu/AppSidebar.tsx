@@ -30,12 +30,14 @@ import {
   UserIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { toggleSidebar, isMobile, openMobile, setOpenMobile, state } =
-    useSidebar();
+  const router = useRouter();
+  const { logout } = useAuth();
+  const { toggleSidebar, isMobile, setOpenMobile, state } = useSidebar();
 
   const menuItems = [
     { href: "/dashboard", label: "Dashboard", icon: <HomeIcon /> },
@@ -67,9 +69,7 @@ export function AppSidebar() {
           collapsible="icon"
           className={cn(
             "border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-900",
-            isMobile
-              ? "fixed inset-0 shadow-lg z-50"
-              : ""
+            isMobile ? "fixed inset-0 shadow-lg z-50" : ""
           )}
         >
           {/* ---------- Sidebar Header ---------- */}
@@ -151,18 +151,21 @@ export function AppSidebar() {
           <SidebarFooter className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
             <SidebarMenu className="bg-white dark:bg-slate-900">
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Log out" asChild>
-                  <Link
-                    href="/sign-in"
+                <SidebarMenuButton tooltip="Log out">
+                  <button
+                    onClick={() => {
+                      logout();
+                      router.push("/sign-in");
+                    }}
                     className={
-                      "flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-red-500/60 hover:text-black hover:font-medium"
+                      "flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-red-500/60 hover:text-black hover:font-medium cursor-pointer"
                     }
                   >
                     <LogOut className="h-4 w-4" />
                     <span className="group-data-[collapsible=icon]:hidden">
                       Log out
                     </span>
-                  </Link>
+                  </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

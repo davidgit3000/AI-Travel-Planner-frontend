@@ -28,7 +28,7 @@ import TransporationPreferences, {
 } from "@/components/plan/TransporationPreferences";
 import { cn } from "@/lib/utils";
 
-import { useTripPlan } from "@/context/TripPlanContext";
+import { useTripPlan } from "@/contexts/TripPlanContext";
 
 // ---------- TODO: Make Tab responsive in mobile view ----------
 export default function PlanPage() {

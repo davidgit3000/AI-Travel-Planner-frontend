@@ -18,8 +18,6 @@ export function ModeToggler() {
   const pathname = usePathname();
 
   return (
-    pathname !== "/sign-in" &&
-    pathname !== "/sign-up" &&
     pathname !== "/" &&
     pathname !== "/questionnaire" && (
       <DropdownMenu>

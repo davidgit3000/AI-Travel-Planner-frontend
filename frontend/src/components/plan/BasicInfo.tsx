@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { searchCities, getCachedCountries, debounce } from "@/utils/api";
-import { useTripPlan } from "@/context/TripPlanContext";
+import { useTripPlan } from "@/contexts/TripPlanContext";
 
 export type BasicInfoType = {
   destination: string;
@@ -147,7 +147,9 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                   aria-expanded={open}
                   className="w-full justify-between border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
-                  {basicInfo.cityLabel || plan.destination || "Search for a city..."}
+                  {basicInfo.cityLabel ||
+                    plan.destination ||
+                    "Search for a city..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -234,7 +236,9 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                   aria-expanded={open}
                   className="w-full justify-between border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
-                  {basicInfo.countryLabel || plan.destination || "Select a country..."}
+                  {basicInfo.countryLabel ||
+                    plan.destination ||
+                    "Select a country..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>

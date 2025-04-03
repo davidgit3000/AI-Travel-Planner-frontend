@@ -1,6 +1,6 @@
 "use client";
 import TripCard from "@/components/plan/TripCard";
-import { useTripPlan } from "@/context/TripPlanContext";
+import { useTripPlan } from "@/contexts/TripPlanContext";
 import { useRouter } from "next/navigation";
 import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";

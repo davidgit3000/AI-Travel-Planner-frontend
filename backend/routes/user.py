@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException
 from database import get_db_cursor
 from models.user import UserCreate, UserLogin
 from passlib.context import CryptContext
-from uuid import UUID
+from datetime import timedelta
+from auth.jwt_handler import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter(
     prefix="/users",
@@ -31,7 +32,20 @@ async def create_user(user: UserCreate):
         """, [user.fullName, user.email, hashed_password, user.address, user.phoneNumber])
         
         new_user = cursor.fetchone()
-        return new_user
+        
+        # Create access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": new_user["email"], "user_id": str(new_user["userId"]), "full_name": new_user["fullName"]},
+            expires_delta=access_token_expires
+        )
+        
+        # Return user info and token
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": new_user
+        }
 
 @router.post("/login")
 async def login(user_credentials: UserLogin):
@@ -41,7 +55,8 @@ async def login(user_credentials: UserLogin):
             SELECT 
                 userid as "userId",
                 email,
-                password
+                password,
+                fullname as "fullName"
             FROM users 
             WHERE email = %s
         """, [user_credentials.email])
@@ -54,8 +69,23 @@ async def login(user_credentials: UserLogin):
         if not verify_password(user_credentials.password, user["password"]):
             raise HTTPException(status_code=401, detail="Invalid email or password")
         
-        # Return user info (excluding password)
-        return {"userId": user["userId"], "email": user["email"]}
+        # Create access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user["email"], "user_id": str(user["userId"]), "full_name": user["fullName"]},
+            expires_delta=access_token_expires
+        )
+        
+        # Return user info and token
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "userId": user["userId"],
+                "email": user["email"],
+                "fullName": user["fullName"]
+            }
+        }
 
 @router.get("/{email}")
 async def get_user(email: str):

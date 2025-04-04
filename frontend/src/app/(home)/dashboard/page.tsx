@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { getCurrentUser, getUserTrips, type Trip } from "@/app/api/client";
 import { differenceInDays } from "date-fns";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface TravelStats {
   totalTrips: number;
@@ -15,6 +17,7 @@ interface TravelStats {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [userName, setUserName] = useState<string>("");
   const [upcomingTrip, setUpcomingTrip] = useState<Trip | null>(null);
   const [stats, setStats] = useState<TravelStats>({
@@ -30,6 +33,8 @@ export default function DashboardPage() {
         const user = await getCurrentUser();
         if (!user) {
           setIsLoading(false);
+          toast.error("User not authenticated. Please sign in first");
+          router.push("/sign-in");
           return;
         }
 
@@ -78,8 +83,9 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[80vh] w-full">
+      <div className="flex flex-col items-center justify-center h-[80vh] w-full gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+        <p className="text-gray-500 dark:text-gray-400">Please wait...</p>
       </div>
     );
   }
@@ -150,7 +156,7 @@ export default function DashboardPage() {
             Travel Stats
           </h2>
           <CardContent className="p-0 grid grid-cols-3 gap-4">
-            {(
+            {
               <>
                 <div className="text-center">
                   <p className="text-2xl font-bold">{stats.totalTrips}</p>
@@ -171,7 +177,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </>
-            )}
+            }
           </CardContent>
         </Card>
       </div>

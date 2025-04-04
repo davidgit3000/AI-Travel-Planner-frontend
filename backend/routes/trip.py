@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from database import get_db_cursor
-from models.trip import TripCreate, TripUpdate
+from models.trip import TripCreate
 from uuid import UUID
 
 router = APIRouter(
@@ -18,8 +18,8 @@ async def create_trip(trip: TripCreate):
         
         # Create trip
         cursor.execute("""
-            INSERT INTO trips (userId, destinationName, planDate, startDate, endDate, tripHighlights, linkPdf)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO trips (userId, destinationName, planDate, startDate, endDate, tripHighlights, linkPdf, imgLink)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING 
                 tripid as "tripId",
                 userid as "userId",
@@ -28,7 +28,8 @@ async def create_trip(trip: TripCreate):
                 startdate as "startDate",
                 enddate as "endDate",
                 triphighlights as "tripHighlights",
-                linkpdf as "linkPdf"
+                linkpdf as "linkPdf",
+                imglink as "imgLink"
         """, [
             str(trip.userId),
             trip.destinationName,
@@ -36,7 +37,8 @@ async def create_trip(trip: TripCreate):
             trip.startDate,
             trip.endDate,
             trip.tripHighlights,
-            trip.linkPdf
+            trip.linkPdf,
+            trip.imgLink
         ])
         
         new_trip = cursor.fetchone()
@@ -66,7 +68,8 @@ async def get_user_trips(user_id: UUID):
                 startdate as "startDate",
                 enddate as "endDate",
                 triphighlights as "tripHighlights",
-                linkpdf as "linkPdf"
+                linkpdf as "linkPdf",
+                imglink as "imgLink"
             FROM trips 
             WHERE userid = %s
             ORDER BY plandate DESC
@@ -90,7 +93,8 @@ async def get_trip(trip_id: UUID):
                 startdate as "startDate",
                 enddate as "endDate",
                 triphighlights as "tripHighlights",
-                linkpdf as "linkPdf"
+                linkpdf as "linkPdf",
+                imglink as "imgLink"
             FROM trips 
             WHERE tripid = %s
         """, [str(trip_id)])
@@ -99,68 +103,6 @@ async def get_trip(trip_id: UUID):
         if trip is None:
             raise HTTPException(status_code=404, detail="Trip not found")
         return trip
-
-@router.put("/{trip_id}")
-async def update_trip(trip_id: UUID, trip_update: TripUpdate):
-    with get_db_cursor() as cursor:
-        # Check if trip exists and get current values
-        cursor.execute("SELECT * FROM trips WHERE tripid = %s", [str(trip_id)])
-        existing_trip = cursor.fetchone()
-        if not existing_trip:
-            raise HTTPException(status_code=404, detail="Trip not found")
-        
-        # Build update query dynamically based on provided fields
-        update_fields = []
-        update_values = []
-        
-        if trip_update.destinationName is not None:
-            update_fields.append("destinationname = %s")
-            update_values.append(trip_update.destinationName)
-        
-        if trip_update.planDate is not None:
-            update_fields.append("plandate = %s")
-            update_values.append(trip_update.planDate)
-        
-        if trip_update.startDate is not None:
-            update_fields.append("startdate = %s")
-            update_values.append(trip_update.startDate)
-        
-        if trip_update.endDate is not None:
-            update_fields.append("enddate = %s")
-            update_values.append(trip_update.endDate)
-        
-        if trip_update.tripHighlights is not None:
-            update_fields.append("triphighlights = %s")
-            update_values.append(trip_update.tripHighlights)
-        
-        if trip_update.linkPdf is not None:
-            update_fields.append("linkpdf = %s")
-            update_values.append(trip_update.linkPdf)
-        
-        if update_fields:
-            # Add trip_id to values
-            update_values.append(str(trip_id))
-            
-            # Execute update query
-            cursor.execute(f"""
-                UPDATE trips 
-                SET {', '.join(update_fields)}
-                WHERE tripid = %s
-                RETURNING 
-                    tripid as "tripId",
-                    userid as "userId",
-                    destinationname as "destinationName",
-                    plandate as "planDate",
-                    startdate as "startDate",
-                    enddate as "endDate",
-                    triphighlights as "tripHighlights",
-                    linkpdf as "linkPdf"
-            """, update_values)
-            
-            updated_trip = cursor.fetchone()
-            return updated_trip
-        
-        return existing_trip
 
 @router.delete("/{trip_id}")
 async def delete_trip(trip_id: UUID):

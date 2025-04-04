@@ -65,8 +65,23 @@ def init_db():
                 startDate DATE NOT NULL,
                 endDate DATE NOT NULL,
                 tripHighlights TEXT,
-                linkPdf VARCHAR(255)
+                linkPdf VARCHAR(255),
+                imgLink VARCHAR(500)
             )
+        """)
+        
+        # Add imgLink column to existing trips table if it doesn't exist
+        cursor.execute("""
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (
+                    SELECT 1 
+                    FROM information_schema.columns 
+                    WHERE table_name='trips' AND column_name='imglink'
+                ) THEN 
+                    ALTER TABLE trips ADD COLUMN imgLink VARCHAR(500);
+                END IF;
+            END $$;
         """)
 
 # Call init_db() when running this file directly

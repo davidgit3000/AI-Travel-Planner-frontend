@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { getCurrentUser, updateUser } from "@/app/api/client";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function ProfileInfo() {
+  const router = useRouter();
   const [editMode, setEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,7 +43,8 @@ export default function ProfileInfo() {
       try {
         const user = await getCurrentUser();
         if (!user) {
-          toast.error("Could not load user data");
+          toast.error("User not authenticated. Please sign in first");
+          router.push("/sign-in");
           return;
         }
 
@@ -111,8 +114,9 @@ export default function ProfileInfo() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[80vh] w-full">
+      <div className="flex flex-col items-center justify-center h-[80vh] w-full gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+        <p className="text-gray-500 dark:text-gray-400">Please wait...</p>
       </div>
     );
   }

@@ -21,30 +21,6 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: Request,
-  context: { params: { tripId: string } }
-) {
-  const { tripId } = await Promise.resolve(context.params);
-  const body = await request.json();
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/trips/${tripId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) throw new Error('Failed to update trip');
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error updating trip:', error);
-    return NextResponse.json({ error: 'Failed to update trip' }, { status: 500 });
-  }
-}
-
 export async function DELETE(
   request: Request,
   context: { params: { tripId: string } }

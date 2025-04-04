@@ -11,11 +11,4 @@ class TripCreate(BaseModel):
     endDate: date
     tripHighlights: Optional[str] = None
     linkPdf: Optional[str] = None
-
-class TripUpdate(BaseModel):
-    destinationName: Optional[str] = None
-    planDate: Optional[date] = None
-    startDate: Optional[date] = None
-    endDate: Optional[date] = None
-    tripHighlights: Optional[str] = None
-    linkPdf: Optional[str] = None
+    imgLink: Optional[str] = None

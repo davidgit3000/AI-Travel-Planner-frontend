@@ -151,12 +151,14 @@ export function AppSidebar() {
           <SidebarFooter className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
             <SidebarMenu className="bg-white dark:bg-slate-900">
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Log out">
-                  <button
-                    onClick={() => {
-                      logout();
-                      router.push("/sign-in");
-                    }}
+                <SidebarMenuButton 
+                  tooltip="Log out"
+                  onClick={() => {
+                    logout();
+                    router.push("/sign-in");
+                  }}
+                >
+                  <div
                     className={
                       "flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-red-500/60 hover:text-black hover:font-medium cursor-pointer"
                     }
@@ -165,7 +167,7 @@ export function AppSidebar() {
                     <span className="group-data-[collapsible=icon]:hidden">
                       Log out
                     </span>
-                  </button>
+                  </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

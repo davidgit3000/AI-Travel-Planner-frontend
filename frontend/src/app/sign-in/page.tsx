@@ -48,7 +48,7 @@ export default function SignInPage() {
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       try {
-        const response = await fetch("http://localhost:8000/users/login", {
+        const response = await fetch("/api/auth/sign-in", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export default function SignInPage() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.detail || "Failed to sign in");
+          throw new Error(errorData.error || "Failed to sign in");
         }
 
         const data = await response.json();

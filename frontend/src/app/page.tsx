@@ -1,9 +1,32 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Brain, ClipboardList } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function Home() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    setIsAuthenticated(!!token && !!user);
+    setIsLoading(false);
+  }, []);
+
+  const handleStartPlanning = () => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    } else {
+      router.push('/sign-in');
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-white text-black">
       {/* Header */}
@@ -12,11 +35,13 @@ export default function Home() {
           <Link href="/">TripMate AI</Link>
         </div>
         <div>
-          <Link href="/sign-in">
-            <Button className="text-md bg-white cursor-pointer text-black font-medium shadow-md hover:bg-blue-500 hover:text-white">
-              Sign in
-            </Button>
-          </Link>
+          {!isLoading && !isAuthenticated && (
+            <Link href="/sign-in">
+              <Button className="text-md bg-white cursor-pointer text-black font-medium shadow-md hover:bg-blue-500 hover:text-white">
+                Sign in
+              </Button>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -37,7 +62,10 @@ export default function Home() {
             Experience personalized travel planning powered by artificial
             intelligence. Create your perfect journey in minutes.
           </p>
-          <Button className="mt-6 text-lg px-6 p-6 cursor-pointer shadow-md hover:bg-blue-500 hover:text-white bg-white">
+          <Button
+            onClick={handleStartPlanning}
+            className="mt-6 text-lg px-6 p-6 cursor-pointer shadow-md hover:bg-blue-500 hover:text-white bg-white"
+          >
             Start Planning
           </Button>
         </div>

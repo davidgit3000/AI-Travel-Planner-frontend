@@ -20,3 +20,28 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
   }
 }
+
+export async function PUT(
+  request: Request,
+  context: { params: { userId: string } }
+) {
+  const { userId } = await Promise.resolve(context.params);
+
+  try {
+    const data = await request.json();
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) throw new Error('Failed to update user');
+    const updatedUser = await response.json();
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+  }
+}

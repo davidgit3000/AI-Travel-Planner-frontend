@@ -3,6 +3,13 @@ export interface User {
   email: string;
   fullName: string;
   phoneNumber?: string;
+  address?: string;
+}
+
+export interface UserUpdate {
+  fullName?: string;
+  phoneNumber?: string;
+  address?: string;
 }
 
 export interface Trip {
@@ -16,13 +23,32 @@ export interface Trip {
   linkPdf?: string;
 }
 
+function getAuthToken(): string | null {
+  try {
+    return localStorage.getItem('token');
+  } catch (error) {
+    console.error('Error getting auth token:', error);
+    return null;
+  }
+}
+
+function getAuthHeaders(): HeadersInit {
+  const token = getAuthToken();
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': token ? `Bearer ${token}` : '',
+  };
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   try {
     const storedUser = localStorage.getItem('user');
     if (!storedUser) return null;
 
     const user = JSON.parse(storedUser);
-    const response = await fetch(`/api/users/${user.userId}`);
+    const response = await fetch(`/api/users/${user.userId}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) throw new Error('Failed to fetch user');
     return await response.json();
   } catch (error) {
@@ -31,12 +57,29 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 }
 
+export async function updateUser(userId: string, data: UserUpdate): Promise<User> {
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update user');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+}
+
 export async function getUserTrips(userId: string): Promise<Trip[]> {
   try {
     const response = await fetch(`/api/trips/user/${userId}`, {
-      headers: {
-        'Accept': 'application/json',
-      },
+      headers: getAuthHeaders(),
     });
     
     const data = await response.json();

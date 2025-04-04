@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from database import get_db_cursor
-from models.user import UserCreate, UserLogin
+from models.user import UserCreate, UserLogin, UserUpdate
 from passlib.context import CryptContext
 from datetime import timedelta
 from auth.jwt_handler import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -126,3 +126,48 @@ async def get_user_by_id(user_id: str):
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash"""
     return pwd_context.verify(plain_password, hashed_password)
+
+@router.put("/{user_id}")
+async def update_user(user_id: str, user_update: UserUpdate):
+    with get_db_cursor() as cursor:
+        # Check if user exists
+        cursor.execute("SELECT userid FROM users WHERE userid = %s", [user_id])
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Update user fields
+        update_fields = []
+        update_values = []
+        
+        if user_update.fullName is not None:
+            update_fields.append("fullname = %s")
+            update_values.append(user_update.fullName)
+            
+        if user_update.address is not None:
+            update_fields.append("address = %s")
+            update_values.append(user_update.address)
+            
+        if user_update.phoneNumber is not None:
+            update_fields.append("phonenumber = %s")
+            update_values.append(user_update.phoneNumber)
+            
+        if not update_fields:
+            return {"message": "No fields to update"}
+            
+        # Construct and execute update query
+        update_query = f"""
+            UPDATE users 
+            SET {', '.join(update_fields)}
+            WHERE userid = %s
+            RETURNING 
+                userid as "userId",
+                fullname as "fullName",
+                email,
+                address,
+                phonenumber as "phoneNumber"
+        """
+        
+        cursor.execute(update_query, update_values + [user_id])
+        updated_user = cursor.fetchone()
+        
+        return updated_user

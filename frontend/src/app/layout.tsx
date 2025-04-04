@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
+import { Toaster } from "sonner";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar-menu/AppSidebar";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -51,18 +50,7 @@ export default function RootLayout({
                 <main className="w-full min-h-screen flex flex-col items-center">
                   {children}
                   <Footer />
-                  <ToastContainer
-                    position="top-right"
-                    autoClose={3000}
-                    hideProgressBar={false}
-                    newestOnTop
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                  />
+                  <Toaster richColors position="top-center" />
                 </main>
               </TripPlanProvider>
             </SidebarProvider>

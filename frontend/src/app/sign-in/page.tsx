@@ -4,7 +4,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 interface FormErrors {
   email?: string;

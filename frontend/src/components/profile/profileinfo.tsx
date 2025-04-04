@@ -4,17 +4,31 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { getCurrentUser, updateUser } from "@/app/api/client";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-export default function ProfileDetails() {
+export default function ProfileInfo() {
   const [editMode, setEditMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const firstNameInputRef = useRef<HTMLInputElement>(null);
 
   // Personal Information
-  const [firstName, setFirstName] = useState("John");
-  const [lastName, setLastName] = useState("Anderson");
-  const [email, setEmail] = useState("john.anderson@example.com");
-  const [phone, setPhone] = useState("123456");
-  const [address, setAddress] = useState("123 Main St");
+  const [userId, setUserId] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+
+  // Track original values for change detection
+  const [originalValues, setOriginalValues] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    address: "",
+  });
 
   const inputClassName = `border-slate-300 focus:border-slate-500 ${
     !editMode
@@ -23,10 +37,85 @@ export default function ProfileDetails() {
   }`;
 
   useEffect(() => {
+    async function loadUserData() {
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          toast.error("Could not load user data");
+          return;
+        }
+
+        setUserId(user.userId);
+        const [first, ...rest] = user.fullName.split(" ");
+        const newFirstName = first;
+        const newLastName = rest.join(" ");
+        const newPhone = user.phoneNumber || "";
+        const newAddress = user.address || "";
+
+        setFirstName(newFirstName);
+        setLastName(newLastName);
+        setEmail(user.email);
+        setPhone(newPhone);
+        setAddress(newAddress);
+
+        // Set original values
+        setOriginalValues({
+          firstName: newFirstName,
+          lastName: newLastName,
+          phone: newPhone,
+          address: newAddress,
+        });
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        toast.error("Could not load user data");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadUserData();
+  }, [toast]);
+
+  useEffect(() => {
     if (editMode && firstNameInputRef.current) {
       firstNameInputRef.current.focus();
     }
   }, [editMode]);
+
+  const handleSave = async () => {
+    if (!userId) return;
+
+    setIsSaving(true);
+    try {
+      await updateUser(userId, {
+        fullName: `${firstName} ${lastName}`.trim(),
+        phoneNumber: phone,
+        address,
+      });
+
+      setEditMode(false);
+      setOriginalValues({
+        firstName,
+        lastName,
+        phone,
+        address,
+      });
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast.error("Could not update profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[80vh] w-full">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full md:w-2/3 p-6 text-foreground">
@@ -34,12 +123,51 @@ export default function ProfileDetails() {
         <h2 className="text-4xl font-bold mb-4 sm:mb-0">
           {firstName} {lastName}
         </h2>
-        <button
-          onClick={() => setEditMode((prev) => !prev)}
-          className="px-8 h-10 text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors"
-        >
-          {editMode ? "Save Changes" : "Edit Profile"}
-        </button>
+        <div className="flex gap-3">
+          {editMode ? (
+            <>
+              <button
+                onClick={() => {
+                  setFirstName(originalValues.firstName);
+                  setLastName(originalValues.lastName);
+                  setPhone(originalValues.phone);
+                  setAddress(originalValues.address);
+                  setEditMode(false);
+                }}
+                className="px-8 h-10 font-bold text-white bg-red-600 hover:bg-red-500 rounded-md transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={
+                  isSaving ||
+                  (firstName === originalValues.firstName &&
+                    lastName === originalValues.lastName &&
+                    phone === originalValues.phone &&
+                    address === originalValues.address)
+                }
+                className="px-8 h-10 font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="ml-2">Saving Changes...</span>
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setEditMode(true)}
+              className="px-8 h-10 text-white bg-blue-600 hover:bg-blue-500 disabled:bg-blue-400 rounded-md transition-colors flex items-center gap-2 cursor-pointer"
+            >
+              Edit Profile
+            </button>
+          )}
+        </div>
       </div>
 
       <Card className="bg-background text-foreground border-slate-300 rounded-xl shadow-lg shadow-slate-400">

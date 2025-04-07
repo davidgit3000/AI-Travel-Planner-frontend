@@ -252,63 +252,51 @@ export default function ResultPage() {
               {plan.isSpecificPlace ? (
                 // Read-only display for specific places
                 <div className="col-span-3">
-                  <div className="space-y-2">
+                  <div className="space-y-6">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       Your Selected Preferences
                     </h3>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                       {Object.entries(currentPreferences).map(
-                        ([category, options]) =>
-                          Object.entries(options)
+                        ([category, options]) => {
+                          const selectedOptions = Object.entries(options)
                             .filter(([_, isSelected]) => isSelected)
-                            .map(([key]) => (
-                              <Badge
-                                key={`${category}-${key}`}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {key.replace(/_/g, " ")}
-                              </Badge>
-                            ))
+                            .map(([key]) => key);
+
+                          if (selectedOptions.length === 0) return null;
+
+                          return (
+                            <div key={category} className="space-y-2">
+                              <h4 className="text-xs font-medium text-muted-foreground capitalize">
+                                {category.replace(/([A-Z])/g, " $1").trim()}
+                              </h4>
+                              <div className="flex flex-wrap gap-2">
+                                {selectedOptions.map((key) => (
+                                  <Badge
+                                    key={`${category}-${key}`}
+                                    className="text-xs"
+                                  >
+                                    {key.replace(/_/g, " ")}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
                       )}
                     </div>
                   </div>
                 </div>
               ) : (
                 <>
-                  <SelectionGroup
-                    label="Accommodations"
-                    options={currentPreferences.accommodations}
-                    onChange={(key) =>
-                      handlePreferenceChange("accommodations", key)
-                    }
-                  />
-                  <SelectionGroup
-                    label="Trip Styles"
-                    options={currentPreferences.tripStyles}
-                    onChange={(key) =>
-                      handlePreferenceChange("tripStyles", key)
-                    }
-                  />
-                  <SelectionGroup
-                    label="Dining Preferences"
-                    options={currentPreferences.dining}
-                    onChange={(key) => handlePreferenceChange("dining", key)}
-                  />
-                  <SelectionGroup
-                    label="Transportation"
-                    options={currentPreferences.transportation}
-                    onChange={(key) =>
-                      handlePreferenceChange("transportation", key)
-                    }
-                  />
-                  <SelectionGroup
-                    label="Activities"
-                    options={currentPreferences.activities}
-                    onChange={(key) =>
-                      handlePreferenceChange("activities", key)
-                    }
-                  />
+                  {Object.entries(currentPreferences).map(([category, options]) => (
+                    <SelectionGroup
+                      key={category}
+                      label={category.replace(/([A-Z])/g, " $1").trim()}
+                      options={options}
+                      onChange={(key) => handlePreferenceChange(category, key)}
+                    />
+                  ))}
                 </>
               )}
             </div>

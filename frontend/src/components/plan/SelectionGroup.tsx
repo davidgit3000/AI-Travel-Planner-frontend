@@ -5,17 +5,17 @@ import { Badge } from "@/components/ui/badge";
 type SelectionGroupProps = {
   label: string;
   options: Record<string, boolean>;
+  onChange?: (key: string) => void;
 };
 
 export default function SelectionGroup({
   label,
   options,
+  onChange,
 }: SelectionGroupProps) {
   const selected = Object.entries(options)
     .filter(([_, selected]) => selected)
     .map(([key]) => key.replace(/_/g, " "));
-
-  if (selected.length === 0) return null;
 
   return (
     <div className="space-y-2">
@@ -23,9 +23,14 @@ export default function SelectionGroup({
         {label}
       </h3>
       <div className="flex flex-wrap gap-2">
-        {selected.map((item) => (
-          <Badge key={item} className="text-xs">
-            {item}
+        {Object.entries(options).map(([key, isSelected]) => (
+          <Badge 
+            key={key} 
+            variant={isSelected ? "default" : "outline"}
+            className={`text-xs cursor-pointer ${isSelected ? 'bg-blue-600 hover:bg-blue-500' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+            onClick={() => onChange?.(key)}
+          >
+            {key.replace(/_/g, " ")}
           </Badge>
         ))}
       </div>

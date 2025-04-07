@@ -1,11 +1,5 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -15,24 +9,29 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { searchCities, getCachedCountries, debounce } from "@/utils/api";
 import { useTripPlan } from "@/contexts/TripPlanContext";
+import { cn } from "@/lib/utils";
+import { getCachedCountries } from "@/utils/api";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export type BasicInfoType = {
   destination: string;
-  cityLabel?: string;
-  countryLabel?: string;
-  searchRadius: number;
+  countryLabel: string;
+  specificPlace: string;
+  isSpecificPlace: boolean;
   startDate: string;
   endDate: string;
   travelers: number;
-  searchType: "city" | "country";
 };
 
 interface BasicInfoProps {
@@ -45,243 +44,186 @@ interface Location {
   label: string;
 }
 
+// TODO: Add an input field to search for a particular place (instead of city)
 export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
-  const { plan, setPlan } = useTripPlan();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<Location[]>([]);
   const [countries, setCountries] = useState<Location[]>([]);
+  const [isSpecificPlace, setIsSpecificPlace] = useState(
+    basicInfo.isSpecificPlace
+  );
 
   // Fetch countries on mount
   useEffect(() => {
     async function loadCountries() {
-      const countriesData = await getCachedCountries();
-      setCountries(
-        countriesData.map((country) => ({
-          value: country.cca2.toLowerCase(),
-          label: country.name.common,
-        }))
-      );
+      try {
+        setIsLoading(true);
+        const countriesData = await getCachedCountries();
+        setCountries(
+          countriesData.map(
+            (country: { cca2: string; name: { common: string } }) => ({
+              value: country.cca2.toLowerCase(),
+              label: country.name.common,
+            })
+          )
+        );
+      } catch (error) {
+        console.error("Failed to load countries:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
     loadCountries();
   }, []);
 
-  // Debounced city search
-  const debouncedCitySearch = useCallback(
-    debounce(async (query: string) => {
-      if (query.length < 2) {
-        setSearchResults([]);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const cities = await searchCities(query);
-        setSearchResults(
-          cities.map((city) => ({
-            value: `${city.id}`,
-            label: `${city.name}, ${city.country}`,
-          }))
-        );
-      } catch (error) {
-        console.error("Error searching cities:", error);
-        setSearchResults([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300),
-    []
-  );
-
-  // Handle search input change
-  const handleSearchChange = useCallback(
-    (query: string) => {
-      if (basicInfo.searchType === "city") {
-        setIsLoading(true);
-        debouncedCitySearch(query);
-      }
-    },
-    [basicInfo.searchType, debouncedCitySearch]
-  );
-
   return (
     <>
-      <div className="space-y-4">
-        <Label
-          htmlFor="destination"
-          className="text-base text-slate-900 dark:text-slate-100"
-        >
-          Where would you like to go?
-        </Label>
-        <Tabs
-          value={basicInfo.searchType}
-          onValueChange={(value) =>
-            setBasicInfo({
-              ...basicInfo,
-              searchType: value as "city" | "country",
-            })
-          }
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 h-14">
-            <TabsTrigger
-              value="city"
-              className="px-4 text-xs sm:text-sm text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400"
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <Label
+              htmlFor="destination-type"
+              className="text-base text-slate-900 dark:text-slate-100"
             >
-              Search by City
-            </TabsTrigger>
-            <TabsTrigger
-              value="country"
-              className="px-4 text-xs sm:text-sm text-slate-600 data-[state=active]:text-blue-600 dark:text-slate-400"
-            >
-              Search by Country
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="city" className="mt-4">
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
+              Destination Type
+            </Label>
+            <div className="relative w-full sm:w-auto">
+              <div className="flex w-full sm:w-[18rem] relative bg-slate-100 dark:bg-slate-800 rounded-lg p-[0.125rem]">
+                {/* Sliding background */}
+                <div
+                  className={`absolute inset-[0.125rem] w-[calc(50%-0.125rem)] bg-white dark:bg-slate-950 rounded-[0.375rem] transition-transform duration-200 ease-out ${
+                    isSpecificPlace ? "translate-x-[100%]" : "translate-x-0"
+                  }`}
+                />
+                {/* Buttons */}
                 <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-full justify-between border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsSpecificPlace(false);
+                    setBasicInfo({
+                      ...basicInfo,
+                      isSpecificPlace: false,
+                      specificPlace: "",
+                    });
+                  }}
+                  className={`flex-1 relative z-10 transition-all duration-200 px-3 py-1.5 text-sm rounded-[0.375rem] ${
+                    !isSpecificPlace
+                      ? "text-primary font-medium ring-1 ring-primary/20 shadow-md shadow-primary/30"
+                      : "text-muted-foreground hover:text-primary"
+                  }`}
                 >
-                  {basicInfo.cityLabel ||
-                    plan.destination ||
-                    "Search for a city..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  By Country
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command shouldFilter={false}>
-                  <CommandInput
-                    placeholder="Search cities..."
-                    onValueChange={handleSearchChange}
-                  />
-                  <CommandList>
-                    <CommandEmpty>
-                      {isLoading ? (
-                        <div className="flex items-center justify-center py-6">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        </div>
-                      ) : (
-                        "No cities found."
-                      )}
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {searchResults.map((city) => (
-                        <CommandItem
-                          key={city.value}
-                          value={city.value}
-                          onSelect={(currentValue) => {
-                            const selected = searchResults.find(
-                              (c) => c.value === currentValue
-                            );
-                            setBasicInfo({
-                              ...basicInfo,
-                              destination: selected?.label || "",
-                              cityLabel: selected?.label || "",
-                            });
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              basicInfo.cityLabel === city.label
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {city.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-
-            <div className="mt-6 space-y-4">
-              <div className="space-y-2">
-                <Label className="text-base text-slate-900 dark:text-slate-100">
-                  Search Radius (miles)
-                </Label>
-                <div className="pt-2">
-                  <Slider
-                    defaultValue={[50]}
-                    max={200}
-                    step={10}
-                    value={[basicInfo.searchRadius]}
-                    onValueChange={([value]) =>
-                      setBasicInfo({ ...basicInfo, searchRadius: value })
-                    }
-                    className="[&_[role=slider]]:bg-blue-600"
-                  />
-                </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {basicInfo.searchRadius} miles radius from city center
-                </p>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsSpecificPlace(true);
+                    setBasicInfo({
+                      ...basicInfo,
+                      isSpecificPlace: true,
+                      destination: "",
+                      countryLabel: "",
+                    });
+                  }}
+                  className={`flex-1 relative z-10 transition-all duration-200 px-3 py-1.5 text-sm rounded-[0.375rem] ${
+                    isSpecificPlace
+                      ? "text-primary font-medium ring-1 ring-primary/20 shadow-md shadow-primary/30"
+                      : "text-muted-foreground hover:text-primary"
+                  }`}
+                >
+                  Specific Place
+                </Button>
               </div>
             </div>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="country" className="mt-4">
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-full justify-between border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                >
-                  {basicInfo.countryLabel ||
-                    plan.destination ||
-                    "Select a country..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search countries..." />
-                  <CommandList className="max-h-[300px] overflow-y-auto">
-                    <CommandEmpty>No country found.</CommandEmpty>
-                    <CommandGroup>
-                      {countries.map((country) => (
-                        <CommandItem
-                          key={country.value}
-                          value={country.value}
-                          onSelect={(currentValue) => {
-                            const selected = countries.find(
-                              (c) => c.value === currentValue
-                            );
-                            setBasicInfo({
-                              ...basicInfo,
-                              destination: selected?.label || "",
-                              countryLabel: selected?.label || "",
-                            });
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              basicInfo.destination === country.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {country.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </TabsContent>
-        </Tabs>
+          {!isSpecificPlace ? (
+            <>
+              <Label
+                htmlFor="destination"
+                className="text-base text-slate-900 dark:text-slate-100"
+              >
+                Select a Country
+              </Label>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  >
+                    {basicInfo.countryLabel || "Select a country..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Search countries..." />
+                    <CommandList>
+                      <CommandEmpty>
+                        {isLoading ? (
+                          <div className="flex items-center justify-center py-6">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          </div>
+                        ) : (
+                          "No countries found."
+                        )}
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {countries.map((country) => (
+                          <CommandItem
+                            key={country.value}
+                            onSelect={() => {
+                              setBasicInfo({
+                                ...basicInfo,
+                                destination: country.label,
+                                countryLabel: country.label,
+                              });
+                              setOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                basicInfo.countryLabel === country.label
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {country.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </>
+          ) : (
+            <>
+              <Label
+                htmlFor="specific-place"
+                className="text-base text-slate-900 dark:text-slate-100"
+              >
+                Enter Destination
+              </Label>
+              <Input
+                id="specific-place"
+                placeholder="e.g., Paris, France or California, USA"
+                value={basicInfo.specificPlace}
+                onChange={(e) =>
+                  setBasicInfo({
+                    ...basicInfo,
+                    specificPlace: e.target.value,
+                    destination: e.target.value,
+                  })
+                }
+                className="w-full border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              />
+            </>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -292,16 +234,49 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
           >
             Start Date
           </Label>
-          <Input
-            id="startDate"
-            type="date"
-            value={basicInfo.startDate}
-            onChange={(e) =>
-              setBasicInfo({ ...basicInfo, startDate: e.target.value })
-            }
-            className="w-full border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          />
+          <div className="w-full">
+            <DatePicker
+              id="startDate"
+              selected={
+                basicInfo.startDate
+                  ? new Date(basicInfo.startDate + "T00:00:00")
+                  : null
+              }
+              onChange={(date: Date | null) => {
+                if (!date) {
+                  setBasicInfo({ ...basicInfo, startDate: "" });
+                  return;
+                }
+                // Use 'en-CA' to get YYYY-MM-DD format in local time
+                const localDateString = date.toLocaleDateString("en-CA");
+                setBasicInfo({
+                  ...basicInfo,
+                  startDate: localDateString,
+                });
+              }}
+              selectsStart
+              startDate={
+                basicInfo.startDate
+                  ? new Date(basicInfo.startDate + "T00:00:00")
+                  : null
+              }
+              endDate={
+                basicInfo.endDate
+                  ? new Date(basicInfo.endDate + "T00:00:00")
+                  : null
+              }
+              minDate={new Date()}
+              maxDate={
+                basicInfo.endDate
+                  ? new Date(basicInfo.endDate + "T00:00:00")
+                  : undefined
+              }
+              placeholderText="Select start date"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-400"
+            />
+          </div>
         </div>
+
         <div className="space-y-2">
           <Label
             htmlFor="endDate"
@@ -309,15 +284,46 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
           >
             End Date
           </Label>
-          <Input
-            id="endDate"
-            type="date"
-            value={basicInfo.endDate}
-            onChange={(e) =>
-              setBasicInfo({ ...basicInfo, endDate: e.target.value })
-            }
-            className="w-full border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          />
+          <div className="w-full">
+            <DatePicker
+              id="endDate"
+              selected={
+                basicInfo.endDate
+                  ? new Date(basicInfo.endDate + "T00:00:00")
+                  : undefined
+              }
+              onChange={(date: Date | null) => {
+                if (!date) {
+                  setBasicInfo({ ...basicInfo, endDate: "" });
+                  return;
+                }
+                // Use 'en-CA' to get YYYY-MM-DD format in local time
+                const localDateString = date.toLocaleDateString("en-CA");
+                setBasicInfo({
+                  ...basicInfo,
+                  endDate: localDateString,
+                });
+              }}
+              selectsEnd
+              startDate={
+                basicInfo.startDate
+                  ? new Date(basicInfo.startDate + "T00:00:00")
+                  : null
+              }
+              endDate={
+                basicInfo.endDate
+                  ? new Date(basicInfo.endDate + "T00:00:00")
+                  : null
+              }
+              minDate={
+                basicInfo.startDate
+                  ? new Date(basicInfo.startDate + "T00:00:00")
+                  : undefined
+              }
+              placeholderText="Select end date"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-400"
+            />
+          </div>
         </div>
       </div>
 

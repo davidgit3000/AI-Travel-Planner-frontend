@@ -36,7 +36,7 @@ AI_Travel_Planner/
 
 4. Run the backend server:
    ```bash
-   uvicorn main:app --reload
+   python -m uvicorn main:app --reload
    ```
    The API will be available at http://localhost:8000
 

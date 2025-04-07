@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AccommodationPreferences, {
   AccommodationType,
 } from "@/components/plan/AccommodationPreferences";
-import BasicInfo from "@/components/plan/BasicInfo";
+import BasicInfo, { BasicInfoType } from "@/components/plan/BasicInfo";
 import TripStyles, { TripStylesType } from "@/components/plan/TripStyles";
 import DiningPreferences, {
   DiningType,
@@ -27,25 +28,53 @@ import TransporationPreferences, {
   TransportationType,
 } from "@/components/plan/TransporationPreferences";
 import { cn } from "@/lib/utils";
-
 import { useTripPlan } from "@/contexts/TripPlanContext";
+import { saveRecommendations } from "@/utils/db";
 
-// ---------- TODO: Make Tab responsive in mobile view ----------
+import LoadingScreen from "@/components/plan/LoadingScreen";
+
+const loadingSteps = [
+  "Analyzing your preferences",
+  "Finding the perfect destinations",
+  "Curating personalized recommendations",
+  "Almost there! Finalizing your travel plans",
+];
+
 export default function PlanPage() {
   const router = useRouter();
   const { plan, setPlan } = useTripPlan();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [loadingText, setLoadingText] = useState(loadingSteps[0]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isGenerating) {
+      timer = setInterval(() => {
+        setLoadingStep((prev) => (prev + 1) % loadingSteps.length);
+      }, 3000);
+    }
+    return () => clearInterval(timer);
+  }, [isGenerating]);
+
+  useEffect(() => {
+    if (isGenerating) {
+      setLoadingText(loadingSteps[loadingStep]);
+    }
+  }, [loadingStep, isGenerating]);
 
   const createInitialState = <T extends { [key: string]: boolean }>(
     list: { value: string }[]
   ): T => Object.fromEntries(list.map((item) => [item.value, false])) as T;
 
-  const [basicInfo, setBasicInfo] = useState({
+  const [basicInfo, setBasicInfo] = useState<BasicInfoType>({
     destination: plan.destination || "",
-    searchRadius: plan.searchRadius || 50,
+    countryLabel: plan.countryLabel || "",
+    specificPlace: plan.specificPlace || "",
+    isSpecificPlace: plan.isSpecificPlace || false,
     startDate: plan.startDate || "",
     endDate: plan.endDate || "",
     travelers: plan.travelers || 0,
-    searchType: plan.searchType || "city",
   });
 
   const [accommodations, setAccommodations] = useState<AccommodationType>(
@@ -82,7 +111,8 @@ export default function PlanPage() {
   const isFormValid = useMemo(() => {
     // Check basic info
     const isBasicInfoValid =
-      basicInfo.destination.trim() !== "" &&
+      ((basicInfo.isSpecificPlace && basicInfo.specificPlace.trim() !== "") ||
+        (!basicInfo.isSpecificPlace && basicInfo.destination.trim() !== "")) &&
       basicInfo.startDate !== "" &&
       basicInfo.endDate !== "" &&
       basicInfo.travelers > 0;
@@ -115,11 +145,12 @@ export default function PlanPage() {
   const handleReset = () => {
     const defaultBasicInfo = {
       destination: "",
-      searchRadius: 50,
+      countryLabel: "",
+      specificPlace: "",
+      isSpecificPlace: false,
       startDate: "",
       endDate: "",
       travelers: 0,
-      searchType: "city" as const,
     };
 
     setBasicInfo(defaultBasicInfo);
@@ -142,119 +173,215 @@ export default function PlanPage() {
     });
   };
 
-  const handleGeneratePlan = () => {
-    setPlan({
-      ...basicInfo,
-      accommodations,
-      tripStyles,
-      dining,
-      transportation,
-      activities,
-    });
-    router.push("/results");
+  const handleGeneratePlan = async () => {
+    if (!isFormValid) return;
+
+    setIsGenerating(true);
+    try {
+      // Save current preferences to context
+      setPlan({
+        ...basicInfo,
+        accommodations,
+        tripStyles,
+        dining,
+        transportation,
+        activities,
+      });
+
+      // Show loading toast
+      // toast.loading("Generating travel recommendations...", {
+      //   duration: Infinity,
+      // });
+
+      // Get travel recommendations from OpenAI
+      const response = await fetch("/api/openai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          basicInfo,
+          travelPreferences: {
+            tripStyles: Object.entries(tripStyles)
+              .filter(([_, selected]) => selected)
+              .map(([value]) => value),
+            accommodation: Object.entries(accommodations)
+              .filter(([_, selected]) => selected)
+              .map(([value]) => value),
+            transportation: Object.entries(transportation)
+              .filter(([_, selected]) => selected)
+              .map(([value]) => value),
+          },
+          diningPreferences: Object.entries(dining)
+            .filter(([_, selected]) => selected)
+            .map(([value]) => value),
+          activities: Object.entries(activities)
+            .filter(([_, selected]) => selected)
+            .map(([value]) => value),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get travel recommendations");
+      }
+
+      const data = await response.json();
+
+      if (!data.destinations || !Array.isArray(data.destinations)) {
+        throw new Error("Invalid response format: missing destinations array");
+      }
+
+      // Store recommendations in IndexedDB
+      try {
+        await saveRecommendations(data);
+        // toast.dismiss();
+        toast.success("Travel recommendations generated!");
+        router.push("/results");
+      } catch (storageError) {
+        console.error("Storage error:", storageError);
+        toast.error("Failed to save recommendations");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to generate recommendations"
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-18 md:py-10 space-y-8">
-      <div className="space-y-8">
-        <h1 className="text-3xl font-bold">Plan Your Trip</h1>
-        <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
-          <Tabs defaultValue="basic" className="w-full">
-            <div className="relative w-full">
-              <TabsList className="w-full flex-nowrap overflow-x-auto overflow-y-hidden whitespace-nowrap no-scrollbar h-14 bg-transparent border-b border-slate-200 dark:border-slate-800 scroll-p-4">
-                <div className="flex px-2 sm:px-4 min-w-full">
-                  <TabsTrigger
-                    value="basic"
-                    className="px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
-                  >
-                    Basic Info
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="preferences"
-                    className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
-                  >
-                    Travel Preferences
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="dining"
-                    className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
-                  >
-                    Dining Preferences
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="activities"
-                    className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
-                  >
-                    Activities
-                  </TabsTrigger>
+    <>
+      <div className="container max-w-4xl mx-auto px-4 py-18 md:py-10 space-y-8">
+        <div className="space-y-8">
+          <h1 className="text-3xl font-bold">Plan Your Trip</h1>
+          <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
+            <Tabs defaultValue="basic" className="w-full">
+              <div className="relative w-full">
+                <TabsList className="w-full flex-nowrap overflow-x-auto overflow-y-hidden whitespace-nowrap no-scrollbar h-14 bg-transparent border-b border-slate-200 dark:border-slate-800 scroll-p-4">
+                  <div className="flex px-2 sm:px-4 min-w-full">
+                    <TabsTrigger
+                      value="basic"
+                      className="px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                    >
+                      Basic Info
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="preferences"
+                      className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                    >
+                      Travel Preferences
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="dining"
+                      className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                    >
+                      Dining Preferences
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="activities"
+                      className="min-w-fit px-4 text-xs md:text-sm h-14 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                    >
+                      Activities
+                    </TabsTrigger>
+                  </div>
+                </TabsList>
+              </div>
+
+              <TabsContent value="basic" className="p-6 md:p-8 space-y-8">
+                <BasicInfo basicInfo={basicInfo} setBasicInfo={setBasicInfo} />
+              </TabsContent>
+
+              <TabsContent value="preferences" className="p-6 md:p-8 space-y-8">
+                <AccommodationPreferences
+                  accommodationList={accommodationList}
+                  accommodations={accommodations}
+                  setAccommodations={setAccommodations}
+                />
+                <TripStyles
+                  tripStylesList={tripStylesList}
+                  tripStyles={tripStyles}
+                  setTripStyles={setTripStyles}
+                />
+                <TransporationPreferences
+                  transportationList={transportationList}
+                  transportation={transportation}
+                  setTransportation={setTransportation}
+                />
+              </TabsContent>
+
+              <TabsContent value="dining" className="p-6 md:p-8 space-y-8">
+                <DiningPreferences
+                  diningList={diningList}
+                  dining={dining}
+                  setDining={setDining}
+                />
+              </TabsContent>
+
+              <TabsContent value="activities" className="p-6 md:p-8 space-y-8">
+                <ActivityPreferences
+                  activityList={activityList}
+                  activities={activities}
+                  setActivities={setActivities}
+                />
+              </TabsContent>
+            </Tabs>
+          </Card>
+
+          <div className="flex justify-end items-center space-x-4">
+            <Button
+              size="lg"
+              onClick={handleReset}
+              disabled={isGenerating}
+              className={cn(
+                "text-xs sm:text-lg px-8 transition-all duration-200 text-white",
+                isGenerating
+                  ? "bg-red-400 cursor-not-allowed"
+                  : "bg-red-500 hover:bg-red-400 cursor-pointer"
+              )}
+            >
+              Reset All
+            </Button>
+
+            <Button
+              size="lg"
+              disabled={!isFormValid || isGenerating}
+              onClick={handleGeneratePlan}
+              className={cn(
+                "px-8 text-white text-xs sm:text-lg transition-all duration-200",
+                !isFormValid || isGenerating
+                  ? "bg-slate-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-500 dark:hover:bg-blue-500 cursor-pointer"
+              )}
+            >
+              {isGenerating ? (
+                <div className="flex items-center space-x-2">
+                  <span>Generating Plan</span>
+                  <span className="inline-block animate-pulse">...</span>
                 </div>
-              </TabsList>
-            </div>
-
-            <TabsContent value="basic" className="p-6 md:p-8 space-y-8">
-              <BasicInfo basicInfo={basicInfo} setBasicInfo={setBasicInfo} />
-            </TabsContent>
-
-            <TabsContent value="preferences" className="p-6 md:p-8 space-y-8">
-              <AccommodationPreferences
-                accommodationList={accommodationList}
-                accommodations={accommodations}
-                setAccommodations={setAccommodations}
-              />
-              <TripStyles
-                tripStylesList={tripStylesList}
-                tripStyles={tripStyles}
-                setTripStyles={setTripStyles}
-              />
-              <TransporationPreferences
-                transportationList={transportationList}
-                transportation={transportation}
-                setTransportation={setTransportation}
-              />
-            </TabsContent>
-
-            <TabsContent value="dining" className="p-6 md:p-8 space-y-8">
-              <DiningPreferences
-                diningList={diningList}
-                dining={dining}
-                setDining={setDining}
-              />
-            </TabsContent>
-
-            <TabsContent value="activities" className="p-6 md:p-8 space-y-8">
-              <ActivityPreferences
-                activityList={activityList}
-                activities={activities}
-                setActivities={setActivities}
-              />
-            </TabsContent>
-          </Tabs>
-        </Card>
-
-        <div className="flex justify-end items-center space-x-4">
-          <Button
-            size="lg"
-            onClick={handleReset}
-            className="cursor-pointer text-xs sm:text-lg px-8 transition-all duration-200 bg-red-500 text-white hover:bg-red-400"
-          >
-            Reset All
-          </Button>
-
-          <Button
-            size="lg"
-            disabled={!isFormValid}
-            onClick={handleGeneratePlan}
-            className={cn(
-              "cursor-pointer px-8 text-white text-xs sm:text-lg transition-all duration-200",
-              isFormValid
-                ? "bg-blue-600 hover:bg-blue-500 dark:hover:bg-blue-500"
-                : "bg-slate-400 cursor-not-allowed"
-            )}
-          >
-            Generate Plan
-          </Button>
+              ) : (
+                "Generate Plan"
+              )}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+      {isGenerating && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <LoadingScreen 
+            message={loadingText} 
+            onCancel={() => {
+              setIsGenerating(false);
+              toast.error('Plan generation cancelled', {
+                cancel: true
+              });
+            }} 
+          />
+        </div>
+      )}
+    </>
   );
 }

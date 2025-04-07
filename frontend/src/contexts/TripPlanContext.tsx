@@ -3,8 +3,9 @@ import { createContext, useContext, useState, ReactNode } from "react";
 
 export type TripPlanData = {
   destination: string;
-  searchType: "city" | "country";
-  searchRadius: number;
+  countryLabel?: string;
+  specificPlace?: string;
+  isSpecificPlace?: boolean;
   startDate: string;
   endDate: string;
   travelers: number;
@@ -17,8 +18,7 @@ export type TripPlanData = {
 
 const defaultState: TripPlanData = {
   destination: "",
-  searchType: "city",
-  searchRadius: 50,
+  countryLabel: undefined,
   startDate: "",
   endDate: "",
   travelers: 0,

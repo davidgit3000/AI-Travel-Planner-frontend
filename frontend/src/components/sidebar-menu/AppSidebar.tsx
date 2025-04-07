@@ -50,8 +50,7 @@ export function AppSidebar() {
   return (
     pathname !== "/sign-in" &&
     pathname !== "/sign-up" &&
-    pathname !== "/" &&
-    pathname !== "/questionnaire" && (
+    pathname !== "/" && (
       <>
         {/* Mobile Sidebar Toggle Button */}
         {isMobile && (
@@ -151,8 +150,9 @@ export function AppSidebar() {
           <SidebarFooter className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
             <SidebarMenu className="bg-white dark:bg-slate-900">
               <SidebarMenuItem>
-                <SidebarMenuButton 
+                <SidebarMenuButton
                   tooltip="Log out"
+                  asChild
                   onClick={() => {
                     logout();
                     router.push("/sign-in");

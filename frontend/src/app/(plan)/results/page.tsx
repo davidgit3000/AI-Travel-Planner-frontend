@@ -215,8 +215,8 @@ export default function ResultPage() {
         <div className="w-full sm:w-auto flex justify-between items-center">
           <div className="flex flex-col sm:flex-row sm:items-center justify-start gap-4 space-x-4">
             <p className="text-muted-foreground">
-              <strong>Date:</strong> {formatDate(plan.startDate)} -{" "}
-              {formatDate(plan.endDate)}
+              <strong>Date:</strong> {plan.startDate && formatDate(plan.startDate)} -{" "}
+              {plan.endDate && formatDate(plan.endDate)}
             </p>
             <p className="text-muted-foreground">
               <strong>Travelers:</strong> {plan.travelers}

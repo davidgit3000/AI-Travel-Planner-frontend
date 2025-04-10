@@ -338,10 +338,11 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
           type="number"
           min="1"
           placeholder="Enter number of travelers"
-          value={basicInfo.travelers}
-          onChange={(e) =>
-            setBasicInfo({ ...basicInfo, travelers: Number(e.target.value) })
-          }
+          value={basicInfo.travelers || ''}
+          onChange={(e) => {
+            const value = e.target.value.replace(/^0+/, '');
+            setBasicInfo({ ...basicInfo, travelers: value ? Number(value) : 0 });
+          }}
           className="w-full border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
       </div>

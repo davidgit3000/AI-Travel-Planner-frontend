@@ -1,11 +1,9 @@
 import TripDetails from "@/components/history/TripDetails";
 
-interface Props {
-  params: {
-    tripID: string;
-  };
-}
+type Params = Promise<{ tripID: string }>;
 
-export default function HistoryDetailPage({ params }: Props) {
-  return <TripDetails tripId={params.tripID} />;
+export default async function HistoryDetailPage({ params }: { params: Params }) {
+  const { tripID } = await params;
+
+  return <TripDetails tripId={tripID} />;
 }

@@ -1,15 +1,13 @@
-"use server";
-
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function GET(
-  request: Request,
-  context: { params: { userId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = await Promise.resolve(context.params);
+    const { userId } = await params;
     const response = await fetch(`${API_BASE_URL}/trips/user/${userId}`);
     
     const data = await response.json();

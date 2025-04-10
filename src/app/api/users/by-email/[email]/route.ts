@@ -4,10 +4,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { email: string } }
+  { params }: { params: Promise<{ email: string }>}
 ) {
   try {
-    const { email } = params;
+    const { email } = await params;
     const decodedEmail = decodeURIComponent(email);
 
     const response = await fetch(`${API_BASE_URL}/users/email/${decodedEmail}`, {

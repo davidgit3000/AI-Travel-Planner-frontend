@@ -35,7 +35,20 @@ export default function HistoryPage() {
         }
 
         const tripsData = await getUserTrips(userId);
-        setTrips(tripsData);
+        // Filter trips that ended before today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+        
+        const pastTrips = tripsData.filter(trip => {
+          const endDate = new Date(trip.endDate);
+          endDate.setHours(0, 0, 0, 0);
+          return endDate < today;
+        });
+        
+        // Sort by end date, most recent first
+        pastTrips.sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime());
+        
+        setTrips(pastTrips);
         setIsLoading(false);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -80,7 +93,7 @@ export default function HistoryPage() {
                   colSpan={5}
                   className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
                 >
-                  No trips found. Start planning your next adventure!
+                  No past trips found. Start planning your next adventure!
                 </td>
               </tr>
             ) : (
@@ -120,7 +133,7 @@ export default function HistoryPage() {
         {trips.length === 0 ? (
           <div className="text-center p-6 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
             <p className="text-gray-500 dark:text-gray-400">
-              No trips found. Start planning your next adventure!
+              No past trips found. Start planning your next adventure!
             </p>
           </div>
         ) : (

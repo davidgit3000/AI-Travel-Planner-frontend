@@ -207,35 +207,45 @@ export default function PlanPage() {
       });
 
       // Get travel recommendations from OpenAI
+      // Prepare request data
+      const requestData = {
+        basicInfo: {
+          ...basicInfo,
+          travelers: Number(basicInfo.travelers),
+        },
+        travelPreferences: {
+          tripStyles: Object.entries(tripStyles)
+            .filter(([, selected]) => selected)
+            .map(([value]) => value),
+          accommodation: Object.entries(accommodations)
+            .filter(([, selected]) => selected)
+            .map(([value]) => value),
+          transportation: Object.entries(transportation)
+            .filter(([, selected]) => selected)
+            .map(([value]) => value),
+        },
+        diningPreferences: Object.entries(dining)
+          .filter(([, selected]) => selected)
+          .map(([value]) => value),
+        activities: Object.entries(activities)
+          .filter(([, selected]) => selected)
+          .map(([value]) => value),
+      };
+
+      console.log('Sending request data:', requestData);
+
       const response = await fetch("/api/openai", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          basicInfo,
-          travelPreferences: {
-            tripStyles: Object.entries(tripStyles)
-              .filter(([, selected]) => selected)
-              .map(([value]) => value),
-            accommodation: Object.entries(accommodations)
-              .filter(([, selected]) => selected)
-              .map(([value]) => value),
-            transportation: Object.entries(transportation)
-              .filter(([, selected]) => selected)
-              .map(([value]) => value),
-          },
-          diningPreferences: Object.entries(dining)
-            .filter(([, selected]) => selected)
-            .map(([value]) => value),
-          activities: Object.entries(activities)
-            .filter(([, selected]) => selected)
-            .map(([value]) => value),
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get travel recommendations");
+        const errorData = await response.json().catch(() => null);
+        console.error('API Error:', errorData);
+        throw new Error(errorData?.detail || "Failed to get travel recommendations");
       }
 
       const data = await response.json();

@@ -17,11 +17,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   ClockIcon,
-  CreditCardIcon,
   HomeIcon,
   LogOut,
   Menu,
@@ -29,13 +29,12 @@ import {
   PlusCircleIcon,
   UserIcon,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePathname } from "next/navigation";
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { logout } = useAuth();
   const { toggleSidebar, isMobile, setOpenMobile, state } = useSidebar();
 
@@ -155,7 +154,7 @@ export function AppSidebar() {
                   asChild
                   onClick={() => {
                     logout();
-                    router.push("/sign-in");
+                    signOut({ callbackUrl: "/sign-in" });
                   }}
                 >
                   <div

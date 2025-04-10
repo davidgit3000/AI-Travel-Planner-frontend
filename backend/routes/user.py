@@ -105,23 +105,23 @@ async def get_user_by_id(user_id: str):
             raise HTTPException(status_code=404, detail="User not found")
         return user
 
-# @router.get("/{email}")
-# async def get_user(email: str):
-#     with get_db_cursor() as cursor:
-#         cursor.execute("""
-#             SELECT 
-#                 userid as "userId",
-#                 fullname as "fullName",
-#                 email,
-#                 address,
-#                 phonenumber as "phoneNumber"
-#             FROM users 
-#             WHERE email = %s
-#         """, [email])
-#         user = cursor.fetchone()
-#         if user is None:
-#             raise HTTPException(status_code=404, detail="User not found")
-#         return user
+@router.get("/email/{email}")
+async def get_user(email: str):
+    with get_db_cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                userid as "userId",
+                fullname as "fullName",
+                email,
+                address,
+                phonenumber as "phoneNumber"
+            FROM users 
+            WHERE email = %s
+        """, [email])
+        user = cursor.fetchone()
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash"""

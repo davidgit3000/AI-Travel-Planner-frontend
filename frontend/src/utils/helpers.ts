@@ -19,3 +19,8 @@ export const formatDate = (dateString: string) => {
     // Convert to days and add 1 for inclusive count
     return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
   }
+
+  export const normalizeDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toISOString().split("T")[0]; // "YYYY-MM-DD"
+  };

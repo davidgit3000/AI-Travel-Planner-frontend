@@ -46,6 +46,24 @@ export default function PlanPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [loadingText, setLoadingText] = useState(loadingSteps[0]);
+  const [currentTab, setCurrentTab] = useState("basic");
+
+  // Tab order for navigation
+  const tabOrder = ["basic", "preferences", "dining", "activities"];
+
+  const handleNextTab = () => {
+    const currentIndex = tabOrder.indexOf(currentTab);
+    if (currentIndex < tabOrder.length - 1) {
+      setCurrentTab(tabOrder[currentIndex + 1]);
+    }
+  };
+
+  const handlePreviousTab = () => {
+    const currentIndex = tabOrder.indexOf(currentTab);
+    if (currentIndex > 0) {
+      setCurrentTab(tabOrder[currentIndex - 1]);
+    }
+  };
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -188,11 +206,6 @@ export default function PlanPage() {
         activities,
       });
 
-      // Show loading toast
-      // toast.loading("Generating travel recommendations...", {
-      //   duration: Infinity,
-      // });
-
       // Get travel recommendations from OpenAI
       const response = await fetch("/api/openai", {
         method: "POST",
@@ -259,7 +272,11 @@ export default function PlanPage() {
         <div className="space-y-8">
           <h1 className="text-3xl font-bold">Plan Your Trip</h1>
           <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
-            <Tabs defaultValue="basic" className="w-full">
+            <Tabs
+              value={currentTab}
+              onValueChange={setCurrentTab}
+              className="w-full"
+            >
               <div className="relative w-full">
                 <TabsList className="w-full flex-nowrap overflow-x-auto overflow-y-hidden whitespace-nowrap no-scrollbar h-14 bg-transparent border-b border-slate-200 dark:border-slate-800 scroll-p-4">
                   <div className="flex px-2 sm:px-4 min-w-full">
@@ -291,8 +308,28 @@ export default function PlanPage() {
                 </TabsList>
               </div>
 
-              <TabsContent value="basic" className="p-6 md:p-8 space-y-8">
+              <TabsContent
+                value="basic"
+                className="p-6 md:p-8 md:pb-6 space-y-8"
+              >
                 <BasicInfo basicInfo={basicInfo} setBasicInfo={setBasicInfo} />
+                <div className="flex justify-end gap-4 mt-8">
+                  <Button
+                    size="lg"
+                    onClick={handlePreviousTab}
+                    className={`${currentTab === tabOrder[0] ? "cursor-not-allowed" : "cursor-pointer"} text-slate-100 bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-400 dark:hover:text-slate-50 dark:text-slate-200 px-8`}
+                    disabled={currentTab === tabOrder[0]}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={handleNextTab}
+                    className="cursor-pointer bg-blue-600 hover:bg-blue-500 text-white px-8"
+                  >
+                    Next
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="preferences" className="p-6 md:p-8 space-y-8">
@@ -311,6 +348,23 @@ export default function PlanPage() {
                   transportation={transportation}
                   setTransportation={setTransportation}
                 />
+                <div className="flex justify-end gap-4 mt-8">
+                  <Button
+                    size="lg"
+                    onClick={handlePreviousTab}
+                    className={`${currentTab === tabOrder[0] ? "cursor-not-allowed" : "cursor-pointer"} text-slate-100 bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-400 dark:hover:text-slate-50 dark:text-slate-200 px-8`}
+                    disabled={currentTab === tabOrder[0]}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={handleNextTab}
+                    className="cursor-pointer bg-blue-600 hover:bg-blue-500 text-white px-8"
+                  >
+                    Next
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="dining" className="p-6 md:p-8 space-y-8">
@@ -319,6 +373,23 @@ export default function PlanPage() {
                   dining={dining}
                   setDining={setDining}
                 />
+                <div className="flex justify-end gap-4 mt-8">
+                  <Button
+                    size="lg"
+                    onClick={handlePreviousTab}
+                    className={`${currentTab === tabOrder[0] ? "cursor-not-allowed" : "cursor-pointer"} text-slate-100 bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-400 dark:hover:text-slate-50 dark:text-slate-200 px-8`}
+                    disabled={currentTab === tabOrder[0]}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={handleNextTab}
+                    className="cursor-pointer bg-blue-600 hover:bg-blue-500 text-white px-8"
+                  >
+                    Next
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="activities" className="p-6 md:p-8 space-y-8">
@@ -327,6 +398,16 @@ export default function PlanPage() {
                   activities={activities}
                   setActivities={setActivities}
                 />
+                <div className="flex justify-end gap-4 mt-8">
+                  <Button
+                    size="lg"
+                    onClick={handlePreviousTab}
+                    className={`${currentTab === tabOrder[0] ? "cursor-not-allowed" : "cursor-pointer"} text-slate-100 bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-400 dark:hover:text-slate-50 dark:text-slate-200 px-8`}
+                    disabled={currentTab === tabOrder[0]}
+                  >
+                    Previous
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
           </Card>
@@ -371,14 +452,14 @@ export default function PlanPage() {
       </div>
       {isGenerating && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <LoadingScreen 
-            message={loadingText} 
+          <LoadingScreen
+            message={loadingText}
             onCancel={() => {
               setIsGenerating(false);
-              toast.error('Plan generation cancelled', {
-                cancel: true
+              toast.error("Plan generation cancelled", {
+                cancel: true,
               });
-            }} 
+            }}
           />
         </div>
       )}

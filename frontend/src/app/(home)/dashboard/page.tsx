@@ -19,7 +19,7 @@ interface TravelStats {
 export default function DashboardPage() {
   const router = useRouter();
   const [userName, setUserName] = useState<string>("");
-  const [upcomingTrip, setUpcomingTrip] = useState<Trip | null>(null);
+  const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
   const [stats, setStats] = useState<TravelStats>({
     totalTrips: 0,
     countriesVisited: 0,
@@ -42,18 +42,16 @@ export default function DashboardPage() {
 
         const trips = await getUserTrips(user.userId);
 
-        // Find upcoming trip (closest to today)
+        // Find upcoming trips
         const today = new Date();
-        const upcomingTrips = trips
+        const futureTrips = trips
           .filter((trip) => new Date(trip.startDate) >= today)
           .sort(
             (a, b) =>
               new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
           );
 
-        if (upcomingTrips.length > 0) {
-          setUpcomingTrip(upcomingTrips[0]);
-        }
+        setUpcomingTrips(futureTrips);
 
         // Calculate stats
         const uniqueCountries = new Set(
@@ -98,7 +96,8 @@ export default function DashboardPage() {
       </h1>
 
       {/* Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* Quick Actions and Stats Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions Card */}
         <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
           <h2 className="text-sm sm:text-lg font-semibold mb-2 dark:text-slate-100">
@@ -119,35 +118,6 @@ export default function DashboardPage() {
               <Link href="/history">View Past Trips</Link>
             </Button>
           </div>
-        </Card>
-
-        {/* Upcoming Trip Card */}
-        <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
-          <h2 className="text-sm sm:text-lg font-semibold mb-2 dark:text-slate-100">
-            Upcoming Trips
-          </h2>
-          <CardContent className="p-0">
-            {upcomingTrip ? (
-              <div className="space-y-2">
-                <p className="text-lg font-medium">
-                  {upcomingTrip.destinationName}
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {new Date(upcomingTrip.startDate).toLocaleDateString()} -{" "}
-                  {new Date(upcomingTrip.endDate).toLocaleDateString()}
-                </p>
-                <Button variant="outline" size="sm" className="w-full" asChild>
-                  <Link href={`/history/${upcomingTrip.tripId}`}>
-                    View Details
-                  </Link>
-                </Button>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                No upcoming trips. Time to plan one!
-              </p>
-            )}
-          </CardContent>
         </Card>
 
         {/* Travel Stats Card */}
@@ -180,6 +150,39 @@ export default function DashboardPage() {
             }
           </CardContent>
         </Card>
+      </div>
+
+      {/* Upcoming Trips Section */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4 dark:text-slate-100">Upcoming Trips</h2>
+        {upcomingTrips.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {upcomingTrips.map((trip) => (
+              <Card key={trip.tripId} className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
+                <CardContent className="p-0 space-y-3">
+                  <div>
+                    <h3 className="text-lg font-medium mb-1">{trip.destinationName}</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      {new Date(trip.startDate).toLocaleDateString()} -{" "}
+                      {new Date(trip.endDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full" asChild>
+                    <Link href={`/history/${trip.tripId}`}>View Details</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
+            <CardContent className="p-0">
+              <p className="text-slate-600 dark:text-slate-400">
+                No upcoming trips. Time to plan one!
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

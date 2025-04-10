@@ -98,12 +98,12 @@ Ensure the suggestions are highly personalized based on all preferences and prov
             size: "1024x1024",
             quality: "standard",
             n: 1,
-            response_format: "b64_json"
+            response_format: "url"
           });
 
           return {
             ...dest,
-            imageUrl: `data:image/png;base64,${image.data[0].b64_json}`,
+            imageUrl: image.data[0].url,
           };
         } catch (error) {
           console.error(`Failed to generate image for ${dest.destination.city}:`, error);

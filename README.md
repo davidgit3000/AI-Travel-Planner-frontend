@@ -1,4 +1,4 @@
-# AI Travel Planner
+# AI Travel Planner (Frontend)
 
 An intelligent travel planning system that generates personalized itineraries based on user preferences, available flights, budget constraints, and current travel offers.
 

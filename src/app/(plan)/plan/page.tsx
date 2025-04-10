@@ -33,6 +33,9 @@ import { saveRecommendations } from "@/utils/db";
 
 import LoadingScreen from "@/components/plan/LoadingScreen";
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
 const loadingSteps = [
   "Analyzing your preferences",
   "Finding the perfect destinations",
@@ -232,20 +235,25 @@ export default function PlanPage() {
           .map(([value]) => value),
       };
 
-      console.log('Sending request data:', requestData);
+      console.log("Sending request data:", requestData);
 
-      const response = await fetch("/api/openai", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/openai/generate-recommendations`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        console.error('API Error:', errorData);
-        throw new Error(errorData?.detail || "Failed to get travel recommendations");
+        console.error("API Error:", errorData);
+        throw new Error(
+          errorData?.detail || "Failed to get travel recommendations"
+        );
       }
 
       const data = await response.json();

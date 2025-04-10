@@ -20,7 +20,7 @@ export default function HistoryPage() {
       try {
         const userStr = localStorage.getItem("user");
         if (!userStr) {
-          toast.error("User not authenticated");
+          toast.error("User not authenticated. Please sign in.");
           setIsLoading(false);
           router.push("/sign-in");
           return;
@@ -37,14 +37,14 @@ export default function HistoryPage() {
         const tripsData = await getUserTrips(userId);
         setTrips(tripsData);
         setIsLoading(false);
-      } catch (err) {
+      } catch (_) {
         toast.error("Failed to load trips");
         setIsLoading(false);
       }
     };
 
     fetchTrips();
-  }, []);
+  }, [router]);
 
   if (isLoading) {
     return (

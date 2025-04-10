@@ -124,7 +124,7 @@ export default function SignUpPage() {
         setOtpSent(true);
         setStep("otp");
         toast.success("OTP sent to your email");
-      } catch (error) {
+      } catch (_) {
         toast.error("Failed to send OTP");
       } finally {
         setIsSendingOTP(false);
@@ -155,7 +155,7 @@ export default function SignUpPage() {
 
         setStep("details");
         toast.success("Email verified successfully");
-      } catch (error) {
+      } catch (_) {
         toast.error("Failed to verify OTP");
       } finally {
         setIsLoading(false);
@@ -201,10 +201,8 @@ export default function SignUpPage() {
 
         // Redirect to dashboard after successful registration
         router.push("/dashboard");
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to create account";
-        toast.error(errorMessage);
+      } catch (_) {
+        toast.error("Failed to create account");
       } finally {
         setIsLoading(false);
       }
@@ -223,7 +221,7 @@ export default function SignUpPage() {
             </h2>
             {step === "otp" && (
               <p className="mt-2 text-sm text-gray-600">
-                We've sent a verification code to {formData.email}
+                We&apos;ve sent a verification code to {formData.email}
               </p>
             )}
           </div>

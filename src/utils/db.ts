@@ -1,9 +1,24 @@
 import { openDB, DBSchema } from 'idb';
 
+interface Destination {
+  destination: {
+    city: string;
+    country: string;
+  };
+  description: string;
+  highlights: string[];
+  imageUrl?: string;
+}
+
+interface TravelRecommendations {
+  destinations: Destination[];
+  [key: string]: unknown;
+}
+
 interface TravelDB extends DBSchema {
   recommendations: {
     key: string;
-    value: any;
+    value: TravelRecommendations;
   };
 }
 
@@ -20,7 +35,7 @@ export async function initDB() {
   });
 }
 
-export async function saveRecommendations(data: any) {
+export async function saveRecommendations(data: TravelRecommendations) {
   const db = await initDB();
   await db.put(STORE_NAME, data, 'latest');
 }

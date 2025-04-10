@@ -216,20 +216,20 @@ export default function PlanPage() {
           basicInfo,
           travelPreferences: {
             tripStyles: Object.entries(tripStyles)
-              .filter(([_, selected]) => selected)
+              .filter(([, selected]) => selected)
               .map(([value]) => value),
             accommodation: Object.entries(accommodations)
-              .filter(([_, selected]) => selected)
+              .filter(([, selected]) => selected)
               .map(([value]) => value),
             transportation: Object.entries(transportation)
-              .filter(([_, selected]) => selected)
+              .filter(([, selected]) => selected)
               .map(([value]) => value),
           },
           diningPreferences: Object.entries(dining)
-            .filter(([_, selected]) => selected)
+            .filter(([, selected]) => selected)
             .map(([value]) => value),
           activities: Object.entries(activities)
-            .filter(([_, selected]) => selected)
+            .filter(([, selected]) => selected)
             .map(([value]) => value),
         }),
       });

@@ -13,10 +13,6 @@ export default function SelectionGroup({
   options,
   onChange,
 }: SelectionGroupProps) {
-  const selected = Object.entries(options)
-    .filter(([_, selected]) => selected)
-    .map(([key]) => key.replace(/_/g, " "));
-
   return (
     <div className="space-y-2">
       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">

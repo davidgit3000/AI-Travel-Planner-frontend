@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+interface Destination {
+  destination: {
+    city: string;
+    country: string;
+  };
+  description: string;
+  highlights: string[];
+  imageUrl?: string;
+}
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -80,7 +90,7 @@ Ensure the suggestions are highly personalized based on all preferences and prov
     }
 
     // Validate each destination object
-    destinations.destinations.forEach((dest: any, index: number) => {
+    destinations.destinations.forEach((dest: Destination, index: number) => {
       if (!dest.destination?.city || !dest.destination?.country || !dest.description || !Array.isArray(dest.highlights)) {
         throw new Error(`Invalid destination format at index ${index}`);
       }
@@ -88,7 +98,7 @@ Ensure the suggestions are highly personalized based on all preferences and prov
 
     // Generate images for each destination using DALL-E
     const destinationsWithImages = await Promise.all(
-      destinations.destinations.map(async (dest: any) => {
+      destinations.destinations.map(async (dest: Destination) => {
         try {
           const prompt = `A beautiful, professional travel photograph of ${dest.destination.city}, ${dest.destination.country}. Show iconic landmarks or cityscapes that capture the essence of the destination. Style: high-quality travel photography, 4K, realistic.`;
           

@@ -77,7 +77,7 @@ export default function DashboardPage() {
     }
 
     fetchData();
-  }, []);
+  }, [router]);
 
   if (isLoading) {
     return (

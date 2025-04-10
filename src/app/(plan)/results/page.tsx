@@ -57,13 +57,13 @@ export default function ResultPage() {
       }, 3000);
     }
     return () => clearInterval(timer);
-  }, [isLoading]);
+  }, [isLoading, loadingSteps.length]);
 
   useEffect(() => {
     if (isLoading) {
       setLoadingText(loadingSteps[loadingStep]);
     }
-  }, [loadingStep, isLoading]);
+  }, [loadingStep, isLoading, loadingSteps]);
 
   const handlePreferenceChange = (category: string, key: string) => {
     setCurrentPreferences((prev) => ({
@@ -84,7 +84,7 @@ export default function ResultPage() {
       // Convert preference objects to arrays of selected items
       const formatPreferences = (prefs: Record<string, boolean>) => {
         return Object.entries(prefs)
-          .filter(([_, isSelected]) => isSelected)
+          .filter(([, isSelected]) => isSelected)
           .map(([key]) => key.replace(/_/g, " "));
       };
 
@@ -123,7 +123,7 @@ export default function ResultPage() {
 
       if (data.destinations) {
         setTripPlans(
-          data.destinations.map((dest: any) => ({
+          data.destinations.map((dest: { destination: { city: string; country: string }; description: string; highlights: string[]; imageUrl: string }) => ({
             destination: dest.destination,
             description: dest.description,
             highlights: dest.highlights,
@@ -148,7 +148,7 @@ export default function ResultPage() {
         const data = await getRecommendations();
         if (data?.destinations) {
           setTripPlans(
-            data.destinations.map((dest: any) => ({
+            data.destinations.map((dest: { destination: { city: string; country: string }; description: string; highlights: string[]; imageUrl: string }) => ({
               destination: dest.destination,
               description: dest.description,
               highlights: dest.highlights,
@@ -164,7 +164,7 @@ export default function ResultPage() {
       }
     }
     loadInitialRecommendations();
-  }, []); // Only run once when component mounts
+  }, [plan.startDate, plan.endDate]); // Only run once when component mounts
 
   if (isLoading) {
     return (
@@ -260,7 +260,7 @@ export default function ResultPage() {
                       {Object.entries(currentPreferences).map(
                         ([category, options]) => {
                           const selectedOptions = Object.entries(options)
-                            .filter(([_, isSelected]) => isSelected)
+                            .filter(([, isSelected]) => isSelected)
                             .map(([key]) => key);
 
                           if (selectedOptions.length === 0) return null;

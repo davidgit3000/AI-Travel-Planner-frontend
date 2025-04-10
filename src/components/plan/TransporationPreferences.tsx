@@ -36,7 +36,7 @@ export default function TransporationPreferences({
   };
 
   // Find the currently selected value
-  const selectedValue = Object.entries(transportation).find(([_, value]) => value)?.[0] || "";
+  const selectedValue = Object.entries(transportation).find(([key, isSelected]) => isSelected)?.[0] || "";
 
   return (
     <div className="space-y-4">

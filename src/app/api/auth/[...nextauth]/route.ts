@@ -47,7 +47,7 @@ const handler = NextAuth({
         return false;
       }
     },
-    async session({ session, token }: { session: any; token: JWT }): Promise<Session> {
+    async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
       return {
         ...session,
         user: {

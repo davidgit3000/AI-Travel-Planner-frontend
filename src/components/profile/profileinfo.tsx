@@ -77,7 +77,7 @@ export default function ProfileInfo() {
     }
 
     loadUserData();
-  }, [toast]);
+  }, [router]);
 
   useEffect(() => {
     if (editMode && firstNameInputRef.current) {

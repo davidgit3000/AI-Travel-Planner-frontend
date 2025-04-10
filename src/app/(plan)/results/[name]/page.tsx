@@ -109,7 +109,7 @@ export default function TripDetailsPage() {
       }
     }
     loadTripDetails();
-  }, []);
+  }, [title]);
 
   useEffect(() => {
     async function checkExistingTrip() {

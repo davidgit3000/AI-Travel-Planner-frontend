@@ -16,7 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useTripPlan } from "@/contexts/TripPlanContext";
 import { cn } from "@/lib/utils";
 import { getCachedCountries } from "@/utils/api";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";

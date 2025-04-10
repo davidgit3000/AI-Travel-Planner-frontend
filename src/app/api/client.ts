@@ -38,7 +38,7 @@ export interface TripPlanRequest {
 
 export interface TripPlanResponse {
   pdfUrl?: string;
-  [key: string]: any; // For any additional fields returned by the API
+  [key: string]: string | undefined; // For any additional fields returned by the API
 }
 
 // Helper function to get auth token from localStorage

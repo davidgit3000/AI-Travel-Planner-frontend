@@ -79,7 +79,7 @@ export default function TripDetails({ tripId }: TripDetailsProps) {
         <div className="h-[400px] md:h-full">
           <div className="relative h-full w-full rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 shadow-lg shadow-slate-400 dark:shadow-slate-600">
             <Image
-              src={imageUrl}
+              src={imageUrl || fallbackImage}
               alt={`${trip.destinationName} view`}
               fill
               className="object-cover"

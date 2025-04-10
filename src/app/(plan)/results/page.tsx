@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import TripCard from "@/components/plan/TripCard";
 import { getRecommendations } from "@/utils/db";
 import { useTripPlan } from "@/contexts/TripPlanContext";
@@ -12,6 +12,18 @@ import SelectionGroup from "@/components/plan/SelectionGroup";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/plan/LoadingScreen";
 
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1935&auto=format&fit=crop";
+
+interface Destination {
+  destination: {
+    city: string;
+    country: string;
+  };
+  description: string;
+  highlights: string[];
+  imageUrl?: string;
+}
+
 interface TripPlan {
   destination: {
     city: string;
@@ -19,7 +31,7 @@ interface TripPlan {
   };
   description: string;
   highlights: string[];
-  imageUrl: string;
+  imageUrl?: string;
   startDate: string;
   endDate: string;
 }
@@ -42,12 +54,12 @@ export default function ResultPage() {
     activities: { ...plan.activities },
   });
 
-  const loadingSteps = [
+  const loadingSteps = useMemo(() => [
     "Analyzing your updated preferences",
     "Finding the perfect destinations",
     "Curating personalized recommendations",
     "Almost there! Finalizing your travel plans",
-  ];
+  ], []);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -146,25 +158,26 @@ export default function ResultPage() {
     async function loadInitialRecommendations() {
       try {
         const data = await getRecommendations();
-        if (data?.destinations) {
-          setTripPlans(
-            data.destinations.map((dest: { destination: { city: string; country: string }; description: string; highlights: string[]; imageUrl: string }) => ({
-              destination: dest.destination,
-              description: dest.description,
-              highlights: dest.highlights,
-              imageUrl: dest.imageUrl,
-              startDate: plan.startDate,
-              endDate: plan.endDate,
-            }))
-          );
+        if (!data?.destinations) {
+          toast.error("No recommendations found");
+          router.push("/plan");
+          return;
         }
+
+        setTripPlans(
+          data.destinations.map((dest: Destination) => ({
+            ...dest,
+            startDate: plan.startDate,
+            endDate: plan.endDate,
+          }))
+        );
       } catch (error) {
         console.error("Error loading initial recommendations:", error);
         toast.error("Failed to load recommendations");
       }
     }
     loadInitialRecommendations();
-  }, [plan.startDate, plan.endDate]); // Only run once when component mounts
+  }, [plan.startDate, plan.endDate, router]); // Only run once when component mounts
 
   if (isLoading) {
     return (
@@ -310,7 +323,7 @@ export default function ResultPage() {
               destination={plan.destination}
               days={calculateTripDuration(plan.startDate, plan.endDate)}
               description={plan.description}
-              imageUrl={plan.imageUrl}
+              imageUrl={plan.imageUrl || FALLBACK_IMAGE}
               onClick={() => {
                 router.push(
                   `/results/${encodeURIComponent(

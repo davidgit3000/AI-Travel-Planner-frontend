@@ -26,9 +26,9 @@ export default function TransporationPreferences({
 }: TransporationPreferencesProps) {
   const handleTransportationChange = (value: string) => {
     const resetState = Object.fromEntries(
-      Object.keys(transportation).map(key => [key, false])
+      Object.keys(transportation).map((key) => [key, false])
     ) as TransportationType;
-    
+
     setTransportation({
       ...resetState,
       [value]: true,
@@ -36,14 +36,17 @@ export default function TransporationPreferences({
   };
 
   // Find the currently selected value
-  const selectedValue = Object.entries(transportation).find(([key, isSelected]) => isSelected)?.[0] || "";
+  const selectedValue =
+    Object.entries(transportation).find(
+      ([, isSelected]) => isSelected
+    )?.[0] || "";
 
   return (
     <div className="space-y-4">
       <Label className="text-base text-slate-900 dark:text-slate-100">
         Transportation Preferences
       </Label>
-      <RadioGroup 
+      <RadioGroup
         value={selectedValue}
         onValueChange={handleTransportationChange}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -58,10 +61,7 @@ export default function TransporationPreferences({
                 : "border-slate-300 dark:border-slate-400"
             )}
           >
-            <RadioGroupItem
-              value={option.value}
-              id={option.value}
-            />
+            <RadioGroupItem value={option.value} id={option.value} />
             <Label
               htmlFor={option.value}
               className={cn(

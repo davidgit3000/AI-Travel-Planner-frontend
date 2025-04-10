@@ -37,8 +37,9 @@ export default function HistoryPage() {
         const tripsData = await getUserTrips(userId);
         setTrips(tripsData);
         setIsLoading(false);
-      } catch (_) {
-        toast.error("Failed to load trips");
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        toast.error(`Failed to load trips: ${errorMessage}`);
         setIsLoading(false);
       }
     };

@@ -9,7 +9,7 @@ import {
   calculateTripDuration,
   normalizeDate,
 } from "@/utils/helpers";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/plan/LoadingScreen";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,22 +27,32 @@ interface TripDetails {
   };
   description: string;
   highlights: string[];
-  imageUrl: string;
+  imageUrl?: string;
 }
 
-const loadingSteps = [
-  "Our AI agent is analyzing your trip details",
-  "Crafting a personalized itinerary",
-  "Adding local insights and recommendations",
-  "Preparing to send your custom travel plan",
-];
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1935&auto=format&fit=crop";
 
 export default function TripDetailsPage() {
+  const loadingSteps = useMemo(() => [
+    "Our AI agent is analyzing your trip details",
+    "Crafting a personalized itinerary",
+    "Adding local insights and recommendations",
+    "Preparing to send your custom travel plan",
+  ], []);
+
   const { user } = useAuth();
   const [isPlanning, setIsPlanning] = useState(false);
   const [isPlanned, setIsPlanned] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [loadingText, setLoadingText] = useState(loadingSteps[0]);
+  const searchParams = useSearchParams();
+  const { name } = useParams();
+  const router = useRouter();
+  const [tripDetails, setTripDetails] = useState<TripDetails | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
+
+  const startDate = formatDate(searchParams.get("from") || "");
+  const endDate = formatDate(searchParams.get("to") || "");
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -52,21 +62,13 @@ export default function TripDetailsPage() {
       }, 3000);
     }
     return () => clearInterval(timer);
-  }, [isPlanning]);
+  }, [isPlanning, loadingSteps.length]);
 
   useEffect(() => {
     if (isPlanning) {
       setLoadingText(loadingSteps[loadingStep]);
     }
-  }, [loadingStep, isPlanning]);
-  const searchParams = useSearchParams();
-  const { name } = useParams();
-  const router = useRouter();
-  const [tripDetails, setTripDetails] = useState<TripDetails | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>("");
-
-  const startDate = formatDate(searchParams.get("from") || "");
-  const endDate = formatDate(searchParams.get("to") || "");
+  }, [loadingStep, isPlanning, loadingSteps]);
 
   const title = name
     ? decodeURIComponent(name as string)
@@ -101,7 +103,7 @@ export default function TripDetailsPage() {
           });
           if (destination) {
             setTripDetails(destination);
-            setImageUrl(destination.imageUrl);
+            setImageUrl(destination.imageUrl || FALLBACK_IMAGE);
           }
         }
       } catch (error) {
@@ -288,15 +290,13 @@ export default function TripDetailsPage() {
         </div>
 
         <div className="w-full shadow-lg shadow-slate-400 dark:shadow-slate-500 aspect-[3/2] bg-gray-300 rounded-lg overflow-hidden relative">
-          {imageUrl && (
-            <Image
-              src={imageUrl}
-              alt={title}
-              fill
-              className="object-cover"
-              unoptimized={imageUrl.startsWith("data:")} // Disable optimization for base64 images
-            />
-          )}
+          <Image
+            src={imageUrl || FALLBACK_IMAGE}
+            alt={title}
+            fill
+            className="object-cover"
+            unoptimized={(imageUrl || "").startsWith("data:")} // Disable optimization for base64 images
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

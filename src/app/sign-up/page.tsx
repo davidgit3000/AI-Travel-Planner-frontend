@@ -124,8 +124,9 @@ export default function SignUpPage() {
         setOtpSent(true);
         setStep("otp");
         toast.success("OTP sent to your email");
-      } catch (_) {
-        toast.error("Failed to send OTP");
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to send OTP';
+        toast.error(errorMessage);
       } finally {
         setIsSendingOTP(false);
       }
@@ -155,8 +156,9 @@ export default function SignUpPage() {
 
         setStep("details");
         toast.success("Email verified successfully");
-      } catch (_) {
-        toast.error("Failed to verify OTP");
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to verify OTP';
+        toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -201,8 +203,9 @@ export default function SignUpPage() {
 
         // Redirect to dashboard after successful registration
         router.push("/dashboard");
-      } catch (_) {
-        toast.error("Failed to create account");
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
+        toast.error(errorMessage);
       } finally {
         setIsLoading(false);
       }

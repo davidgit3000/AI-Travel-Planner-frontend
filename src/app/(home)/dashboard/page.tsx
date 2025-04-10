@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getCurrentUser, getUserTrips, type Trip } from "@/app/api/client";
 import { differenceInDays } from "date-fns";
+import { formatDate } from "@/utils/helpers";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -163,8 +164,8 @@ export default function DashboardPage() {
                   <div>
                     <h3 className="text-lg font-medium mb-1">{trip.destinationName}</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {new Date(trip.startDate).toLocaleDateString()} -{" "}
-                      {new Date(trip.endDate).toLocaleDateString()}
+                      {formatDate(trip.startDate)} -{" "}
+                      {formatDate(trip.endDate)}
                     </p>
                   </div>
                   <Button variant="outline" size="sm" className="w-full" asChild>

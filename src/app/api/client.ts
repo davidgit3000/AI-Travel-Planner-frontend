@@ -140,30 +140,6 @@ export async function createTrip(trip: TripCreate): Promise<Trip> {
   }
 }
 
-// Plan a new trip using AI agent from n8en and send it to the user's email
-export async function planTrip(data: TripPlanRequest): Promise<TripPlanResponse> {
-  try {
-    const response = await fetch('/api/plan-trip', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to trigger trip planning.');
-    }
-
-    return result;
-  } catch (error) {
-    console.error('Error planning trip:', error);
-    throw error;
-  }
-}
-
 // Get all trips for a user by userId
 export async function getUserTrips(userId: string): Promise<Trip[]> {
   try {

@@ -13,12 +13,7 @@ import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/plan/LoadingScreen";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  createTrip,
-  planTrip,
-  getUserTrips,
-  type Trip,
-} from "@/app/api/client";
+import { createTrip, getUserTrips, type Trip } from "@/app/api/client";
 
 interface TripDetails {
   destination: {
@@ -30,15 +25,22 @@ interface TripDetails {
   imageUrl?: string;
 }
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1935&auto=format&fit=crop";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1935&auto=format&fit=crop";
 
 export default function TripDetailsPage() {
-  const loadingSteps = useMemo(() => [
-    "Our AI agent is analyzing your trip details",
-    "Crafting a personalized itinerary",
-    "Adding local insights and recommendations",
-    "Preparing to send your custom travel plan",
-  ], []);
+  const loadingSteps = useMemo(
+    () => [
+      "Our AI agent is analyzing your trip details",
+      "Crafting a personalized itinerary",
+      "Adding local insights and recommendations",
+      "Preparing to send your custom travel plan",
+    ],
+    []
+  );
 
   const { user } = useAuth();
   const [isPlanning, setIsPlanning] = useState(false);
@@ -80,10 +82,7 @@ export default function TripDetailsPage() {
         .join(" ")
     : "";
 
-  // Check if trip already exists when component mounts
   useEffect(() => {
-    console.log("Checking existing trip...");
-
     async function loadTripDetails() {
       try {
         const data = await getRecommendations();
@@ -113,7 +112,10 @@ export default function TripDetailsPage() {
     loadTripDetails();
   }, [title]);
 
+  // Check if trip already exists when component mounts
   useEffect(() => {
+    console.log("Checking existing trip...");
+
     async function checkExistingTrip() {
       if (!user?.userId || !tripDetails) {
         console.log("Not enough data to check for existing trip");
@@ -196,18 +198,40 @@ export default function TripDetailsPage() {
     try {
       console.log("Sending trip plan request...");
       // Plan trip using AI agent from n8n and sent it to the user's email
-      const result = await planTrip({
-        destination: `${tripDetails.destination.city}, ${tripDetails.destination.country}`,
-        startDate,
-        endDate,
-        fullName: user?.fullName,
-        days: calculateTripDuration(startDate, endDate),
-        email: user?.email,
+      const requestData = {
+        data: {
+          destination: `${tripDetails.destination.city}, ${tripDetails.destination.country}`,
+          startDate,
+          endDate,
+          fullName: user?.fullName || "",
+          days: calculateTripDuration(startDate, endDate),
+          email: user?.email || "",
+        },
+      };
+
+      console.log("Sending webhook request:", requestData);
+
+      const response = await fetch(`${API_BASE_URL}/webhook/trigger`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error("Webhook error:", errorData);
+        throw new Error(
+          errorData?.detail || `Failed to trigger webhook: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
 
       console.log("Trip plan result:", result);
 
-      if (!result.itineraryUrl) {
+      if (!result.pdfUrl) {
         throw new Error("No itinerary URL received");
       }
 
@@ -218,7 +242,7 @@ export default function TripDetailsPage() {
         startDate: new Date(startDate).toISOString().split("T")[0],
         endDate: new Date(endDate).toISOString().split("T")[0],
         tripHighlights: tripDetails.highlights.join("\n"),
-        linkPdf: result.itineraryUrl,
+        linkPdf: result.pdfUrl,
         imgLink: imageUrl || "",
       });
 
@@ -232,7 +256,7 @@ export default function TripDetailsPage() {
             startDate: new Date(startDate).toISOString().split("T")[0],
             endDate: new Date(endDate).toISOString().split("T")[0],
             tripHighlights: tripDetails.highlights.join("\n"),
-            linkPdf: result.itineraryUrl, // If your API returns a PDF URL
+            linkPdf: result.pdfUrl, // If your API returns a PDF URL
             imgLink: imageUrl || "",
           });
         } catch (error) {
@@ -254,7 +278,7 @@ export default function TripDetailsPage() {
       setIsPlanning(false);
     }
   };
-  
+
   if (!tripDetails) {
     return (
       <>
@@ -278,7 +302,6 @@ export default function TripDetailsPage() {
     );
   }
 
- 
   return (
     <>
       <div className="min-h-screen bg-background text-foreground px-4 py-20 md:py-10 max-w-6xl mx-auto space-y-6">
@@ -348,10 +371,7 @@ export default function TripDetailsPage() {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <LoadingScreen
             message={loadingText}
-            onCancel={() => {
-              setIsPlanning(false);
-              toast.error("Trip planning cancelled");
-            }}
+            description={"It can take a few minutes to plan your trip"}
           />
         </div>
       )}

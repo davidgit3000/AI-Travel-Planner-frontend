@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 
 interface LoadingScreenProps {
   message: string;
+  description?: string;
   onCancel?: () => void;
 }
 
 export default function LoadingScreen({
   message,
+  description,
   onCancel,
 }: LoadingScreenProps) {
   const [dots, setDots] = useState("");
@@ -32,6 +34,7 @@ export default function LoadingScreen({
             {message}
             {dots}
           </p>
+          {description && <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>}
           {onCancel && (
             <div className="flex justify-center">
               <Button

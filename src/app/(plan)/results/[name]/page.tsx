@@ -371,7 +371,7 @@ export default function TripDetailsPage() {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <LoadingScreen
             message={loadingText}
-            description={"It can take a few minutes to plan your trip"}
+            description={`It can take a few minutes to plan your trip. A PDF file of your trip schedule will be sent to your email ${user?.email}.`}
           />
         </div>
       )}

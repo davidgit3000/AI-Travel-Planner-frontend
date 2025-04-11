@@ -472,6 +472,7 @@ export default function PlanPage() {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <LoadingScreen
             message={loadingText}
+            description={`It might take a few minutes to generate your trip plan. Please wait!`}
             onCancel={() => {
               setIsGenerating(false);
               toast.error("Plan generation cancelled", {

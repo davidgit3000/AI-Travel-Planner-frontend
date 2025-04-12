@@ -176,6 +176,16 @@ export default function ProfileInfo() {
 
       <Card className="bg-background text-foreground border-slate-300 rounded-xl shadow-lg shadow-slate-400">
         <CardContent className="p-6 space-y-8">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              readOnly
+              className={"bg-slate-200 dark:bg-slate-700/40 cursor-not-allowed"}
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
@@ -198,17 +208,6 @@ export default function ProfileInfo() {
                 className={inputClassName}
               />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              readOnly={!editMode}
-              className={inputClassName}
-            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>

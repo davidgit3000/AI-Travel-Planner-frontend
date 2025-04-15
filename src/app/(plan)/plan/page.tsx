@@ -136,13 +136,13 @@ export default function PlanPage() {
       }, 3000);
     }
     return () => clearInterval(timer);
-  }, [isGenerating]);
+  }, [isGenerating, loadingSteps.length]);
 
   useEffect(() => {
     if (isGenerating) {
       setLoadingText(loadingSteps[loadingStep]);
     }
-  }, [loadingStep, isGenerating]);
+  }, [loadingStep, isGenerating, loadingSteps]);
 
   // Check if all required fields are filled
   const isFormValid = useMemo(() => {

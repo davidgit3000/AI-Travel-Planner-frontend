@@ -15,15 +15,15 @@ import LoadingScreen from "@/components/plan/LoadingScreen";
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1935&auto=format&fit=crop";
 
-interface Destination {
-  destination: {
-    city: string;
-    country: string;
-  };
-  description: string;
-  highlights: string[];
-  imageUrl?: string;
-}
+// interface Destination {
+//   destination: {
+//     city: string;
+//     country: string;
+//   };
+//   description: string;
+//   highlights: string[];
+//   imageUrl?: string;
+// }
 
 interface TripPlan {
   destination: {
@@ -226,7 +226,7 @@ export default function ResultPage() {
     }
 
     loadInitialRecommendations();
-  }, [plan.startDate, plan.endDate, router]); // Only run once when component mounts
+  }, [plan, router, setPlan]); // Only run once when component mounts
 
   // if (isLoading === false && tripPlans.length === 0) {
   //   return (

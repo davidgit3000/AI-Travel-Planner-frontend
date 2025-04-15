@@ -1,6 +1,6 @@
 import { openDB, DBSchema } from 'idb';
 
-interface Destination {
+export interface Destination {
   destination: {
     city: string;
     country: string;
@@ -8,6 +8,11 @@ interface Destination {
   description: string;
   highlights: string[];
   imageUrl?: string;
+  startDate: string;
+  endDate: string;
+  travelers: number;
+  isSpecificPlace?: boolean;
+  specificPlace?: string;
 }
 
 interface TravelRecommendations {

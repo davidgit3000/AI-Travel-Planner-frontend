@@ -106,16 +106,28 @@ export default function HistoryPage() {
                     {trip.destinationName}
                   </td>
                   <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                    {new Date(trip.planDate).toLocaleDateString()}
+                    {new Date(trip.planDate + 'T00:00:00').toLocaleDateString('en-US', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      year: 'numeric'
+                    })}
                   </td>
                   <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                    {new Date(trip.startDate).toLocaleDateString()}
+                    {new Date(trip.startDate + 'T00:00:00').toLocaleDateString('en-US', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      year: 'numeric'
+                    })}
                   </td>
                   <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                    {new Date(trip.endDate).toLocaleDateString()}
+                    {new Date(trip.endDate + 'T00:00:00').toLocaleDateString('en-US', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      year: 'numeric'
+                    })}
                   </td>
                   <td className="px-6 py-4">
-                    <Link href={`/history/${trip.tripId}`}>
+                    <Link href={`/trips/${trip.tripId}`}>
                       <Button className="bg-gradient-to-r cursor-pointer from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700">
                         View Details
                       </Button>
@@ -147,18 +159,30 @@ export default function HistoryPage() {
                   {trip.destinationName}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Planned on: {new Date(trip.planDate).toLocaleDateString()}
+                  Planned on: {new Date(trip.planDate + 'T00:00:00').toLocaleDateString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                  })}
                 </p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  From: {new Date(trip.startDate).toLocaleDateString()}
+                  From: {new Date(trip.startDate + 'T00:00:00').toLocaleDateString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                  })}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  To: {new Date(trip.endDate).toLocaleDateString()}
+                  To: {new Date(trip.endDate + 'T00:00:00').toLocaleDateString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                  })}
                 </p>
               </div>
-              <Link href={`/history/${trip.tripId}`} className="block">
+              <Link href={`/trips/${trip.tripId}`} className="block">
                 <Button className="w-full bg-gradient-to-r cursor-pointer from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700">
                   View Details
                 </Button>

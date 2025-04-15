@@ -29,67 +29,28 @@ import TransporationPreferences, {
 } from "@/components/plan/TransporationPreferences";
 import { cn } from "@/lib/utils";
 import { useTripPlan } from "@/contexts/TripPlanContext";
-import { saveRecommendations } from "@/utils/db";
+import { saveRecommendations, type Destination } from "@/utils/db";
 
 import LoadingScreen from "@/components/plan/LoadingScreen";
+import { capitalize } from "@/utils/helpers";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-
-const loadingSteps = [
-  "Analyzing your preferences",
-  "Finding the perfect destinations",
-  "Curating personalized recommendations",
-  "Almost there! Finalizing your travel plans",
-];
 
 export default function PlanPage() {
   const router = useRouter();
   const { plan, setPlan } = useTripPlan();
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
-  const [loadingText, setLoadingText] = useState(loadingSteps[0]);
-  const [currentTab, setCurrentTab] = useState("basic");
-
-  // Tab order for navigation
-  const tabOrder = ["basic", "preferences", "dining", "activities"];
-
-  const handleNextTab = () => {
-    const currentIndex = tabOrder.indexOf(currentTab);
-    if (currentIndex < tabOrder.length - 1) {
-      setCurrentTab(tabOrder[currentIndex + 1]);
-    }
-  };
-
-  const handlePreviousTab = () => {
-    const currentIndex = tabOrder.indexOf(currentTab);
-    if (currentIndex > 0) {
-      setCurrentTab(tabOrder[currentIndex - 1]);
-    }
-  };
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isGenerating) {
-      timer = setInterval(() => {
-        setLoadingStep((prev) => (prev + 1) % loadingSteps.length);
-      }, 3000);
-    }
-    return () => clearInterval(timer);
-  }, [isGenerating]);
-
-  useEffect(() => {
-    if (isGenerating) {
-      setLoadingText(loadingSteps[loadingStep]);
-    }
-  }, [loadingStep, isGenerating]);
 
   const createInitialState = <T extends { [key: string]: boolean }>(
     list: { value: string }[]
   ): T => Object.fromEntries(list.map((item) => [item.value, false])) as T;
 
   const [basicInfo, setBasicInfo] = useState<BasicInfoType>({
-    destination: plan.destination || "",
+    destination: plan.isSpecificPlace
+      ? (plan.specificPlace && capitalize(plan.specificPlace)) || ""
+      : (plan.destination && capitalize(plan.destination)) || "",
     countryLabel: plan.countryLabel || "",
     specificPlace: plan.specificPlace || "",
     isSpecificPlace: plan.isSpecificPlace || false,
@@ -127,6 +88,61 @@ export default function PlanPage() {
       ? (plan.activities as ActivityType)
       : createInitialState<ActivityType>(activityList)
   );
+  const [currentTab, setCurrentTab] = useState("basic");
+
+  const loadingSteps = useMemo(
+    () =>
+      basicInfo.isSpecificPlace
+        ? [
+            "Analyzing your preferences for " +
+              capitalize(basicInfo.destination),
+            "Discovering hidden gems in " + capitalize(basicInfo.destination),
+            "Crafting your personalized itinerary",
+            "Almost there! Finalizing your perfect trip to " +
+              capitalize(basicInfo.destination),
+          ]
+        : [
+            "Analyzing your preferences",
+            "Finding destinations that match your style",
+            "Curating personalized recommendations",
+            "Almost there! Finalizing your travel plans",
+          ],
+    [basicInfo]
+  );
+  const [loadingText, setLoadingText] = useState(loadingSteps[0]);
+
+  // Tab order for navigation
+  const tabOrder = ["basic", "preferences", "dining", "activities"];
+
+  const handleNextTab = () => {
+    const currentIndex = tabOrder.indexOf(currentTab);
+    if (currentIndex < tabOrder.length - 1) {
+      setCurrentTab(tabOrder[currentIndex + 1]);
+    }
+  };
+
+  const handlePreviousTab = () => {
+    const currentIndex = tabOrder.indexOf(currentTab);
+    if (currentIndex > 0) {
+      setCurrentTab(tabOrder[currentIndex - 1]);
+    }
+  };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isGenerating) {
+      timer = setInterval(() => {
+        setLoadingStep((prev) => (prev + 1) % loadingSteps.length);
+      }, 3000);
+    }
+    return () => clearInterval(timer);
+  }, [isGenerating]);
+
+  useEffect(() => {
+    if (isGenerating) {
+      setLoadingText(loadingSteps[loadingStep]);
+    }
+  }, [loadingStep, isGenerating]);
 
   // Check if all required fields are filled
   const isFormValid = useMemo(() => {
@@ -262,10 +278,27 @@ export default function PlanPage() {
         throw new Error("Invalid response format: missing destinations array");
       }
 
-      // Store recommendations in IndexedDB
+      // Add trip details to each destination and store in IndexedDB
       try {
-        await saveRecommendations(data);
-        // toast.dismiss();
+        const enrichedData = {
+          ...data,
+          destinations: data.destinations.map((destination: Destination) => ({
+            ...destination,
+            startDate: basicInfo.startDate,
+            endDate: basicInfo.endDate,
+            travelers: Number(basicInfo.travelers),
+            isSpecificPlace: basicInfo.isSpecificPlace,
+            specificPlace: basicInfo.specificPlace,
+          })),
+          // Include all preferences
+          accommodations,
+          tripStyles,
+          dining,
+          transportation,
+          activities,
+        };
+
+        await saveRecommendations(enrichedData);
         toast.success("Travel recommendations generated!");
         router.push("/results");
       } catch (storageError) {

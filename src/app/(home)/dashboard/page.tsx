@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [userName, setUserName] = useState<string>("");
   const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
+  const [inProgressTrips, setInProgressTrips] = useState<Trip[]>([]);
   const [stats, setStats] = useState<TravelStats>({
     totalTrips: 0,
     countriesVisited: 0,
@@ -43,16 +44,41 @@ export default function DashboardPage() {
 
         const trips = await getUserTrips(user.userId);
 
-        // Find upcoming trips
+        // Find in-progress and upcoming trips
         const today = new Date();
-        const futureTrips = trips
-          .filter((trip) => new Date(trip.startDate) >= today)
-          .sort(
-            (a, b) =>
-              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-          );
+        // Set time to midnight for consistent date comparison
+        today.setHours(0, 0, 0, 0);
 
-        setUpcomingTrips(futureTrips);
+        const { inProgress, upcoming } = trips.reduce(
+          (acc, trip) => {
+            // Parse dates and ensure they're in local timezone
+            const startDate = new Date(trip.startDate + 'T00:00:00');
+            const endDate = new Date(trip.endDate + 'T00:00:00');
+            
+            console.log("Date comparison:", {
+              startDate,
+              endDate,
+              today,
+              rawStart: trip.startDate,
+              rawEnd: trip.endDate
+            });
+            if (startDate <= today && endDate >= today) {
+              acc.inProgress.push(trip);
+            } else if (startDate > today) {
+              acc.upcoming.push(trip);
+            }
+            return acc;
+          },
+          { inProgress: [] as Trip[], upcoming: [] as Trip[] }
+        );
+
+        setInProgressTrips(inProgress.sort((a, b) => 
+          new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+        ));
+        
+        setUpcomingTrips(upcoming.sort((a, b) => 
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        ));
 
         // Calculate stats
         const uniqueCountries = new Set(
@@ -153,6 +179,46 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* In-progress Trips Section */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4 dark:text-slate-100">In-progress Trips</h2>
+        {inProgressTrips.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {inProgressTrips.map((trip) => (
+              <Card key={trip.tripId} className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
+                <CardContent className="p-0 space-y-3">
+                  <div>
+                    <h3 className="text-lg font-medium mb-1">{trip.destinationName}</h3>
+                    <div className="space-y-1">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Planned on {formatDate(trip.planDate)}
+                      </p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Start: {formatDate(trip.startDate)}
+                      </p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        End: {formatDate(trip.endDate)}
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full" asChild>
+                    <Link href={`/trips/${trip.tripId}`}>View Details</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
+            <CardContent className="p-0">
+              <p className="text-slate-600 dark:text-slate-400">
+                No trips currently in progress.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
       {/* Upcoming Trips Section */}
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4 dark:text-slate-100">Upcoming Trips</h2>
@@ -163,13 +229,20 @@ export default function DashboardPage() {
                 <CardContent className="p-0 space-y-3">
                   <div>
                     <h3 className="text-lg font-medium mb-1">{trip.destinationName}</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {formatDate(trip.startDate)} -{" "}
-                      {formatDate(trip.endDate)}
-                    </p>
+                    <div className="space-y-1">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Planned on {formatDate(trip.planDate)}
+                      </p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Start: {formatDate(trip.startDate)}
+                      </p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        End: {formatDate(trip.endDate)}
+                      </p>
+                    </div>
                   </div>
                   <Button variant="outline" size="sm" className="w-full" asChild>
-                    <Link href={`/history/${trip.tripId}`}>View Details</Link>
+                    <Link href={`/trips/${trip.tripId}`}>View Details</Link>
                   </Button>
                 </CardContent>
               </Card>

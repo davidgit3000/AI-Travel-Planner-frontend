@@ -69,8 +69,17 @@ export default function TripDetails({ tripId }: TripDetailsProps) {
           {trip.destinationName}
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
-          {new Date(trip.startDate).toLocaleDateString()} -{" "}
-          {new Date(trip.endDate).toLocaleDateString()}
+          {new Date(trip.startDate + "T00:00:00").toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          })}{" "}
+          -{" "}
+          {new Date(trip.endDate + "T00:00:00").toLocaleDateString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          })}
         </p>
       </div>
 

@@ -322,8 +322,8 @@ export default function TripDetailsPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <section className="border border-slate-400 dark:border-slate-300 shadow-lg shadow-slate-400 rounded-lg p-4 md:col-span-2">
+        <div className="grid grid-cols-1 gap-6">
+          <section className="border border-slate-400 dark:border-slate-300 shadow-lg shadow-slate-400 rounded-lg p-4">
             <h2 className="font-semibold mb-2">
               About {tripDetails.destination.city}
             </h2>

@@ -24,3 +24,7 @@ export const formatDate = (dateString: string) => {
     const date = new Date(dateStr);
     return date.toISOString().split("T")[0]; // "YYYY-MM-DD"
   };
+
+  export const capitalize = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }

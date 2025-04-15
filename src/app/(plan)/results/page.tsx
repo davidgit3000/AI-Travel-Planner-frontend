@@ -226,7 +226,7 @@ export default function ResultPage() {
     }
 
     loadInitialRecommendations();
-  }, [plan, router, setPlan]); // Only run once when component mounts
+  }, []); // Only run once when component mounts
 
   // if (isLoading === false && tripPlans.length === 0) {
   //   return (
@@ -246,7 +246,7 @@ export default function ResultPage() {
   //   );
   // }
 
-  if (isLoading == true) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[80vh] w-full gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-blue-500" />

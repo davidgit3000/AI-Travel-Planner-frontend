@@ -15,21 +15,14 @@ import LoadingScreen from "@/components/plan/LoadingScreen";
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1935&auto=format&fit=crop";
 
-// interface Destination {
-//   destination: {
-//     city: string;
-//     country: string;
-//   };
-//   description: string;
-//   highlights: string[];
-//   imageUrl?: string;
-// }
+interface Destination {
+  city: string;
+  state?: string;
+  country?: string;
+}
 
 interface TripPlan {
-  destination: {
-    city: string;
-    country: string;
-  };
+  destination: Destination;
   description: string;
   highlights: string[];
   imageUrl?: string;
@@ -265,6 +258,8 @@ export default function ResultPage() {
               {plan.isSpecificPlace
                 ? plan.specificPlace && capitalize(plan.specificPlace)
                 : plan.destination && capitalize(plan.destination)}
+              {tripPlans.length > 0 && tripPlans[0].destination.state && 
+                `, ${capitalize(tripPlans[0].destination.state)}`}
             </h1>
             <span className="text-xs md:text-md text-gray-600 dark:text-gray-300">
               {tripPlans.length} {tripPlans.length === 1 ? "plan" : "plans"}{" "}
@@ -380,7 +375,7 @@ export default function ResultPage() {
                 onClick={() => {
                   router.push(
                     `/results/${encodeURIComponent(
-                      `${plan.destination.city}, ${plan.destination.country}`
+                      `${plan.destination.city}, ${plan.destination.state || plan.destination.country}`
                         .toLowerCase()
                         .replace(/, /g, "-")
                     )}?from=${plan.startDate}&to=${plan.endDate}`

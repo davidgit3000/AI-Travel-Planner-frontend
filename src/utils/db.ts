@@ -4,6 +4,7 @@ export interface Destination {
   destination: {
     city: string;
     country: string;
+    state?: string;
   };
   description: string;
   highlights: string[];

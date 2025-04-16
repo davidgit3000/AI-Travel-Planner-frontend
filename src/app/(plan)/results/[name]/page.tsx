@@ -14,11 +14,13 @@ import { toast } from "sonner";
 import LoadingScreen from "@/components/plan/LoadingScreen";
 import { useAuth } from "@/contexts/AuthContext";
 import { createTrip, getUserTrips, type Trip } from "@/app/api/client";
+import { Loader2 } from "lucide-react";
 
 interface TripDetails {
   destination: {
     city: string;
     country: string;
+    state?: string;
   };
   description: string;
   highlights: string[];
@@ -88,7 +90,7 @@ export default function TripDetailsPage() {
         const data = await getRecommendations();
         if (data) {
           const destination = data.destinations.find((dest: TripDetails) => {
-            const destString = `${dest.destination.city}, ${dest.destination.country}`;
+            const destString = `${dest.destination.city}, ${dest.destination.state || dest.destination.country}`;
             // Convert both strings to lowercase and normalize spaces and commas
             const normalizedDest = destString
               .toLowerCase()
@@ -126,7 +128,7 @@ export default function TripDetailsPage() {
         const userTrips = await getUserTrips(user.userId);
         console.log("User trips:", userTrips);
         console.log("Current trip details:", {
-          destination: `${tripDetails?.destination.city}, ${tripDetails?.destination.country}`,
+          destination: `${tripDetails?.destination.city}, ${tripDetails?.destination.state || tripDetails?.destination.country}`,
           startDate,
           endDate,
         });
@@ -137,7 +139,7 @@ export default function TripDetailsPage() {
             .replace(/\s+/g, " ")
             .trim();
           const currentDestination =
-            `${tripDetails?.destination.city}, ${tripDetails?.destination.country}`
+            `${tripDetails?.destination.city}, ${tripDetails?.destination.state || tripDetails?.destination.country}`
               .toLowerCase()
               .replace(/\s+/g, " ")
               .trim();
@@ -200,7 +202,7 @@ export default function TripDetailsPage() {
       // Plan trip using AI agent from n8n and sent it to the user's email
       const requestData = {
         data: {
-          destination: `${tripDetails.destination.city}, ${tripDetails.destination.country}`,
+          destination: `${tripDetails.destination.city}, ${tripDetails.destination.state || tripDetails.destination.country}`,
           startDate,
           endDate,
           fullName: user?.fullName || "",
@@ -237,7 +239,7 @@ export default function TripDetailsPage() {
 
       console.log("Sending trip to API:", {
         userId: user?.userId,
-        destinationName: `${tripDetails.destination.city}, ${tripDetails.destination.country}`,
+        destinationName: `${tripDetails.destination.city}, ${tripDetails.destination.state || tripDetails.destination.country}`,
         planDate: new Date().toISOString().split("T")[0],
         startDate: new Date(startDate).toISOString().split("T")[0],
         endDate: new Date(endDate).toISOString().split("T")[0],
@@ -251,7 +253,7 @@ export default function TripDetailsPage() {
         try {
           await createTrip({
             userId: user?.userId,
-            destinationName: `${tripDetails.destination.city}, ${tripDetails.destination.country}`,
+            destinationName: `${tripDetails.destination.city}, ${tripDetails.destination.state || tripDetails.destination.country}`,
             planDate: new Date().toISOString().split("T")[0],
             startDate: new Date(startDate).toISOString().split("T")[0],
             endDate: new Date(endDate).toISOString().split("T")[0],
@@ -282,22 +284,10 @@ export default function TripDetailsPage() {
   if (!tripDetails) {
     return (
       <>
-        <div className="min-h-screen bg-background text-foreground px-4 py-20 md:py-10 max-w-6xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-md md:text-2xl font-bold">Loading...</h1>
-          </div>
+        <div className="flex flex-col items-center justify-center h-[80vh] w-full gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+          <p className="text-gray-500 dark:text-gray-400">Please wait...</p>
         </div>
-        {isPlanning && (
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
-            <LoadingScreen
-              message={loadingText}
-              onCancel={() => {
-                setIsPlanning(false);
-                toast.error("Trip planning cancelled");
-              }}
-            />
-          </div>
-        )}
       </>
     );
   }

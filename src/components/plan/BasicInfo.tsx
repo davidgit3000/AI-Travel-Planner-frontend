@@ -142,7 +142,7 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                 htmlFor="destination"
                 className="text-base text-slate-900 dark:text-slate-100"
               >
-                Select a Country
+                Select a country
               </Label>
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
@@ -152,7 +152,7 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                     aria-expanded={open}
                     className="w-full justify-between border-slate-300 focus:border-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                   >
-                    {basicInfo.countryLabel || "Select a country..."}
+                    {basicInfo.countryLabel || "Search a country..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -205,11 +205,11 @@ export default function BasicInfo({ basicInfo, setBasicInfo }: BasicInfoProps) {
                 htmlFor="specific-place"
                 className="text-base text-slate-900 dark:text-slate-100"
               >
-                Enter Destination
+                Enter a place or a region (state, province, etc.)
               </Label>
               <Input
                 id="specific-place"
-                placeholder="e.g., Paris, France or California, USA"
+                placeholder="e.g., Paris or California"
                 value={basicInfo.specificPlace}
                 onChange={(e) =>
                   setBasicInfo({

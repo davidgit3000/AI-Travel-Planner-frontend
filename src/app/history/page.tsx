@@ -40,8 +40,8 @@ export default function HistoryPage() {
         today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
         
         const pastTrips = tripsData.filter(trip => {
-          const endDate = new Date(trip.endDate);
-          endDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(trip.endDate + 'T00:00:00');
+          console.log("Today: " + today + "\nEnd Date: " + endDate);
           return endDate < today;
         });
         

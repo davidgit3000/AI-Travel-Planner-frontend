@@ -40,6 +40,9 @@ export default function SignUpPage() {
     password: "",
     confirmPassword: "",
   });
+  // OTP input as array of digits
+  const [otpDigits, setOtpDigits] = useState(Array(6).fill(""));
+  const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -125,7 +128,8 @@ export default function SignUpPage() {
         setStep("otp");
         toast.success("OTP sent to your email");
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to send OTP';
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to send OTP";
         toast.error(errorMessage);
       } finally {
         setIsSendingOTP(false);
@@ -157,7 +161,8 @@ export default function SignUpPage() {
         setStep("details");
         toast.success("Email verified successfully");
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to verify OTP';
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to verify OTP";
         toast.error(errorMessage);
       } finally {
         setIsLoading(false);
@@ -204,7 +209,8 @@ export default function SignUpPage() {
         // Redirect to dashboard after successful registration
         router.push("/dashboard");
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to create account";
         toast.error(errorMessage);
       } finally {
         setIsLoading(false);
@@ -284,19 +290,56 @@ export default function SignUpPage() {
                 >
                   Enter OTP
                 </label>
-                <input
-                  type="text"
-                  id="otp"
-                  name="otp"
-                  value={formData.otp}
-                  onChange={handleInputChange}
-                  className={`text-gray-800 w-full px-4 py-3 rounded-lg border 
-                  ${errors.otp ? "border-red-500" : "border-gray-300"}
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300`}
-                  placeholder="Enter the 6-digit code"
-                  required
-                  maxLength={6}
-                />
+                <div className="flex gap-2 justify-center">
+                  {otpDigits.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => {
+                        inputRefs.current[idx] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      className={`w-12 h-14 text-center text-2xl text-slate-800 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${errors.otp ? "border-red-500" : "border-gray-300"}`}
+                      value={digit}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9]/, "");
+                        if (!val) return;
+                        const newOtp = [...otpDigits];
+                        newOtp[idx] = val;
+                        setOtpDigits(newOtp);
+                        // Move to next input
+                        if (idx < 5 && val) inputRefs.current[idx + 1]?.focus();
+                        // Update formData.otp
+                        setFormData((f) => ({ ...f, otp: newOtp.join("") }));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Backspace") {
+                          if (otpDigits[idx]) {
+                            // Clear current
+                            const newOtp = [...otpDigits];
+                            newOtp[idx] = "";
+                            setOtpDigits(newOtp);
+                            setFormData((f) => ({
+                              ...f,
+                              otp: newOtp.join(""),
+                            }));
+                          } else if (idx > 0) {
+                            // Move focus to previous
+                            inputRefs.current[idx - 1]?.focus();
+                          }
+                        } else if (e.key === "ArrowLeft" && idx > 0) {
+                          inputRefs.current[idx - 1]?.focus();
+                        } else if (e.key === "ArrowRight" && idx < 5) {
+                          inputRefs.current[idx + 1]?.focus();
+                        }
+                      }}
+                      aria-label={`OTP digit ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+                {/* Hidden input for accessibility/form submission fallback */}
+                <input type="hidden" name="otp" value={otpDigits.join("")} />
                 {errors.otp && (
                   <p className="mt-1 text-sm text-red-500" role="alert">
                     {errors.otp}
@@ -307,15 +350,17 @@ export default function SignUpPage() {
               <div className="flex justify-between items-center">
                 <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setStep("email")}
-                  className="cursor-pointer hover:bg-blue-500 hover:text-white text-blue-600  text-sm font-medium"
+                  className="cursor-pointer underline text-slate-700 hover:text-slate-800 hover:dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-800  text-sm font-medium"
                 >
                   Change Email
                 </Button>
                 <Button
                   type="button"
+                  variant="ghost"
                   onClick={handleEmailSubmit}
-                  className="cursor-pointer hover:bg-blue-500 hover:text-white text-blue-600 text-sm font-medium"
+                  className="cursor-pointer underline text-slate-700 hover:text-slate-800 hover:dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-800 text-sm font-medium"
                   disabled={isLoading}
                 >
                   Resend OTP

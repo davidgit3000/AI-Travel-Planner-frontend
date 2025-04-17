@@ -143,6 +143,33 @@ export default function PlanPage() {
       setLoadingText(loadingSteps[loadingStep]);
     }
   }, [loadingStep, isGenerating, loadingSteps]);
+  
+  // Check if any field is filled (for Reset button)
+  const isAnyFieldFilled = useMemo(() => {
+    // Check basic info fields
+    const basicInfoFilled = (
+      (basicInfo.isSpecificPlace && basicInfo.specificPlace.trim() !== "") ||
+      (!basicInfo.isSpecificPlace && basicInfo.destination.trim() !== "") ||
+      basicInfo.countryLabel.trim() !== "" ||
+      basicInfo.startDate !== "" ||
+      basicInfo.endDate !== "" ||
+      basicInfo.travelers > 0
+    );
+    // Check at least one selected in each preference group
+    const hasAccommodation = Object.values(accommodations).some((v) => v);
+    const hasTripStyle = Object.values(tripStyles).some((v) => v);
+    const hasDining = Object.values(dining).some((v) => v);
+    const hasTransportation = Object.values(transportation).some((v) => v);
+    const hasActivities = Object.values(activities).some((v) => v);
+    return (
+      basicInfoFilled ||
+      hasAccommodation ||
+      hasTripStyle ||
+      hasDining ||
+      hasTransportation ||
+      hasActivities
+    );
+  }, [basicInfo, accommodations, tripStyles, dining, transportation, activities]);
 
   // Check if all required fields are filled
   const isFormValid = useMemo(() => {
@@ -467,10 +494,10 @@ export default function PlanPage() {
             <Button
               size="lg"
               onClick={handleReset}
-              disabled={isGenerating}
+              disabled={isGenerating || !isAnyFieldFilled}
               className={cn(
                 "text-xs sm:text-lg px-8 transition-all duration-200 text-white",
-                isGenerating
+                isGenerating || !isAnyFieldFilled
                   ? "bg-red-400 cursor-not-allowed"
                   : "bg-red-500 hover:bg-red-400 cursor-pointer"
               )}

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import TripCard from "@/components/plan/TripCard";
-import { getRecommendations } from "@/utils/db";
+import { getRecommendations, saveRecommendations } from "@/utils/db";
 import { useTripPlan, type TripPlanData } from "@/contexts/TripPlanContext";
 import { useRouter } from "next/navigation";
 import { Filter, Loader2 } from "lucide-react";
@@ -64,19 +64,19 @@ export default function ResultPage() {
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (isLoading) {
+    if (isRegenerating) {
       timer = setInterval(() => {
         setLoadingStep((prev) => (prev + 1) % loadingSteps.length);
       }, 3000);
     }
     return () => clearInterval(timer);
-  }, [isLoading, loadingSteps.length]);
+  }, [isRegenerating, loadingSteps.length]);
 
   useEffect(() => {
-    if (isLoading) {
+    if (isRegenerating) {
       setLoadingText(loadingSteps[loadingStep]);
-    }
-  }, [loadingStep, isLoading, loadingSteps]);
+    } 
+  }, [loadingStep, isRegenerating, loadingSteps]);
 
   const handlePreferenceChange = (category: string, key: string) => {
     setCurrentPreferences((prev) => ({
@@ -90,8 +90,7 @@ export default function ResultPage() {
 
   const handleRegeneratePlan = async () => {
     setIsRegenerating(true);
-    setIsLoading(true);
-    setLoadingStep(0);
+    // setLoadingStep(0);
 
     try {
       // Convert preference objects to arrays of selected items
@@ -134,36 +133,47 @@ export default function ResultPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to generate recommendations");
+        throw new Error("Failed to regenerate recommendations");
       }
 
       const data = await response.json();
 
-      if (data.destinations) {
-        setTripPlans(
-          data.destinations.map(
-            (dest: {
-              destination: { city: string; country: string };
-              description: string;
-              highlights: string[];
-              imageUrl: string;
-            }) => ({
-              destination: dest.destination,
-              description: dest.description,
-              highlights: dest.highlights,
-              imageUrl: dest.imageUrl,
-              startDate: plan.startDate,
-              endDate: plan.endDate,
-            })
-          )
-        );
+      if (!data.destinations || !Array.isArray(data.destinations)) {
+        throw new Error("Invalid response format: missing destinations array");
+      }
+
+      // Add trip details to each destination and store in IndexedDB
+      try {
+        const enrichedData = {
+          ...data,
+          destinations: data.destinations.map((destination: Destination) => ({
+            ...destination,
+            startDate: plan.startDate,
+            endDate: plan.endDate,
+            travelers: plan.travelers,
+            isSpecificPlace: plan.isSpecificPlace,
+            specificPlace: plan.specificPlace,
+          })),
+          // Include all preferences
+          accommodations: currentPreferences.accommodations,
+          tripStyles: currentPreferences.tripStyles,
+          dining: currentPreferences.dining,
+          transportation: currentPreferences.transportation,
+          activities: currentPreferences.activities,
+        };
+
+        await saveRecommendations(enrichedData);
+        setTripPlans(enrichedData.destinations);
         toast.success("Successfully updated your travel plan!");
+      } catch (storageError) {
+        console.error("Storage error:", storageError);
+        toast.error("Failed to save recommendations");
       }
     } catch (error) {
       console.error("Error regenerating recommendations:", error);
+      toast.error("Failed to regenerate recommendations");
     } finally {
       setIsRegenerating(false);
-      setIsLoading(false);
     }
   };
 
@@ -258,7 +268,8 @@ export default function ResultPage() {
               {plan.isSpecificPlace
                 ? plan.specificPlace && capitalize(plan.specificPlace)
                 : plan.destination && capitalize(plan.destination)}
-              {tripPlans.length > 0 && tripPlans[0].destination.state && 
+              {tripPlans.length > 0 &&
+                tripPlans[0].destination.state &&
                 `, ${capitalize(tripPlans[0].destination.state)}`}
             </h1>
             <span className="text-xs md:text-md text-gray-600 dark:text-gray-300">
@@ -396,11 +407,12 @@ export default function ResultPage() {
         </div>
       </div>
       {isRegenerating && (
-        <div className="min-h-screen bg-background text-foreground px-4 py-20 md:py-10 flex items-center justify-center">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <LoadingScreen
             message={loadingText}
+            description={`It might take a few minutes to generate your trip plan. Please wait!`}
             onCancel={() => {
-              setIsLoading(false);
+              // setIsLoading(false);
               setIsRegenerating(false);
               toast.error("Plan generation cancelled");
             }}

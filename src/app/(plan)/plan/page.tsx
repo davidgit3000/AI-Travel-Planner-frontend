@@ -41,7 +41,7 @@ const API_BASE_URL =
 
 export default function PlanPage() {
   const router = useRouter();
-  const { plan, setPlan } = useTripPlan();
+  const { plan, setPlan, resetPlan } = useTripPlan();
   const [isGenerating, setIsGenerating] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
 
@@ -229,14 +229,7 @@ export default function PlanPage() {
     setActivities(createInitialState<ActivityType>(activityList));
 
     // Also clear the global plan context
-    setPlan({
-      ...defaultBasicInfo,
-      accommodations: {},
-      tripStyles: {},
-      dining: {},
-      transportation: {},
-      activities: {},
-    });
+    resetPlan();
   };
 
   const handleGeneratePlan = async () => {

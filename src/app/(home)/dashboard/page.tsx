@@ -90,14 +90,11 @@ export default function DashboardPage() {
         dining: recommendation.data.dining,
         transportation: recommendation.data.transportation,
         activities: recommendation.data.activities,
-        explanation: recommendation.explanation
+        explanation: recommendation.explanation,
       });
 
       // Show success message with the first highlight
-      toast.success(
-        recommendation.explanation.highlights[0] || 
-        "Got a perfect destination for you!"
-      );
+      toast.success("Found a perfect destination for you!");
 
       // Navigate to the plan page
       router.push("/plan");

@@ -45,7 +45,9 @@ const getStoredPlan = (): TripPlanData => {
 
 const defaultState: TripPlanData = {
   destination: "",
-  countryLabel: undefined,
+  countryLabel: "",
+  specificPlace: "",
+  isSpecificPlace: false,
   startDate: "",
   endDate: "",
   travelers: 0,

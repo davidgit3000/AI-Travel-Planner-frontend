@@ -1,5 +1,5 @@
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
 export type TransportationType = {
@@ -11,6 +11,7 @@ export type TransportationType = {
   train: boolean;
   bus: boolean;
   boat: boolean;
+  [key: string]: boolean;
 };
 
 interface TransporationPreferencesProps {
@@ -24,58 +25,55 @@ export default function TransporationPreferences({
   transportation,
   setTransportation,
 }: TransporationPreferencesProps) {
-  const handleTransportationChange = (value: string) => {
-    const resetState = Object.fromEntries(
-      Object.keys(transportation).map((key) => [key, false])
-    ) as TransportationType;
-
-    setTransportation({
-      ...resetState,
-      [value]: true,
-    });
-  };
-
-  // Find the currently selected value
-  const selectedValue =
-    Object.entries(transportation).find(
-      ([, isSelected]) => isSelected
-    )?.[0] || "";
-
   return (
     <div className="space-y-4">
       <Label className="text-base text-slate-900 dark:text-slate-100">
-        Transportation Preferences
+        Transportation Preferences{" "}
+        <span className="text-sm text-slate-600 dark:text-slate-400">
+          (Select all that apply)
+        </span>
       </Label>
-      <RadioGroup
-        value={selectedValue}
-        onValueChange={handleTransportationChange}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
-      >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {transportationList.map((option) => (
           <div
             key={option.value}
             className={cn(
-              "flex items-center space-x-2 rounded-md border border-slate-300 dark:border-slate-700 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors",
+              "flex items-center space-x-2 border rounded-md p-2 transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800",
               transportation[option.value as keyof TransportationType]
                 ? "border-2 border-blue-600 dark:border-blue-500"
                 : "border-slate-300 dark:border-slate-400"
             )}
+            onClick={() =>
+              setTransportation((prev) => ({
+                ...prev,
+                [option.value as keyof TransportationType]:
+                  !prev[option.value as keyof TransportationType],
+              }))
+            }
           >
-            <RadioGroupItem value={option.value} id={option.value} />
+            <Checkbox
+              id={option.value}
+              checked={transportation[option.value as keyof TransportationType]}
+              onCheckedChange={(checked) =>
+                setTransportation((prev) => ({
+                  ...prev,
+                  [option.value as keyof TransportationType]: checked === true,
+                }))
+              }
+            />
             <Label
               htmlFor={option.value}
               className={cn(
-                "text-sm text-slate-600 dark:text-slate-400 cursor-pointer",
-                transportation[option.value as keyof TransportationType]
-                  ? "text-slate-800 dark:text-slate-100"
-                  : "text-slate-600 dark:text-slate-400"
+                "text-sm text-slate-600 dark:text-slate-400",
+                transportation[option.value as keyof TransportationType] &&
+                  "text-slate-800 dark:text-slate-100"
               )}
             >
               {option.label}
             </Label>
           </div>
         ))}
-      </RadioGroup>
+      </div>
     </div>
   );
 }

@@ -9,19 +9,21 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { differenceInDays } from "date-fns";
+import { formatDate } from "@/utils/helpers";
+import { Loader2, PlusCircle, Sparkles, Clock } from "lucide-react";
+import { useTripPlan } from "@/contexts/TripPlanContext";
+import LoadingScreen from "@/components/plan/LoadingScreen";
+
 import {
   getCurrentUser,
   getUserTrips,
   getRecommendedTrip,
   type Trip,
 } from "@/app/api/client";
-import { differenceInDays } from "date-fns";
-import { formatDate } from "@/utils/helpers";
-import { Loader2, PlusCircle, Sparkles, Clock } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useTripPlan } from "@/contexts/TripPlanContext";
 
 interface TravelStats {
   totalTrips: number;
@@ -43,6 +45,31 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRecommending, setIsRecommending] = useState(false);
   const [userId, setUserId] = useState<string>("");
+  const [loadingStep, setLoadingStep] = useState(0);
+
+  const loadingSteps = useMemo(
+    () => [
+      "Analyzing your travel history and preferences",
+      "Finding the perfect destination for you",
+      "Crafting personalized recommendations",
+      "Almost there! Finalizing your travel suggestions",
+    ],
+    []
+  );
+
+  const loadingText = useMemo(
+    () => loadingSteps[loadingStep % loadingSteps.length],
+    [loadingStep, loadingSteps]
+  );
+
+  useEffect(() => {
+    if (isRecommending) {
+      const interval = setInterval(() => {
+        setLoadingStep((step) => step + 1);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [isRecommending]);
 
   const handleRecommendTrip = async () => {
     try {
@@ -382,6 +409,20 @@ export default function DashboardPage() {
           </Card>
         )}
       </div>
+      {isRecommending && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <LoadingScreen
+            message={loadingText}
+            description={`We're finding the perfect destination based on your travel history. Please wait!`}
+            onCancel={() => {
+              setIsRecommending(false);
+              toast.error("Recommendation cancelled", {
+                cancel: true,
+              });
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

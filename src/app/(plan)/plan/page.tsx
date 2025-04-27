@@ -3,9 +3,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TypeWriter } from "@/components/ui/typewriter";
 import AccommodationPreferences, {
   AccommodationType,
 } from "@/components/plan/AccommodationPreferences";
@@ -349,6 +351,47 @@ export default function PlanPage() {
       <div className="container max-w-4xl mx-auto px-4 py-18 md:py-10 space-y-8">
         <div className="space-y-8">
           <h1 className="text-3xl font-bold">Plan Your Trip</h1>
+
+          {plan.explanation && (
+            <Card className="p-6 border-2 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-blue-500" />
+                  <span className="text-lg font-medium text-blue-500">From TripMate AI agent</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Why this destination?</h3>
+                  <p className="text-slate-600 dark:text-slate-300">
+                    <TypeWriter text={plan.explanation.summary} delay={20} />
+                  </p>
+                </div>
+                {plan.explanation.travelHistory && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Based on your travel history</h3>
+                    <p className="text-slate-600 dark:text-slate-300">
+                      <TypeWriter text={plan.explanation.travelHistory} delay={20} />
+                    </p>
+                  </div>
+                )}
+                {plan.explanation.highlights.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Key highlights</h3>
+                    <ul className="list-disc pl-5 space-y-2">
+                      {plan.explanation.highlights.map((highlight, index) => (
+                        <li key={index} className="text-slate-600 dark:text-slate-300">
+                          <TypeWriter 
+                            text={highlight} 
+                            delay={20 + (index * 5)} // Stagger the typing effect
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
           <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
             <Tabs
               value={currentTab}
@@ -527,33 +570,6 @@ export default function PlanPage() {
                 )}
               </Button>
             </div>
-
-            {plan.explanation && (
-              <Card className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Why this destination?</h3>
-                    <p className="text-slate-600 dark:text-slate-300">{plan.explanation.summary}</p>
-                  </div>
-                  {plan.explanation.travelHistory && (
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">Based on your travel history</h3>
-                      <p className="text-slate-600 dark:text-slate-300">{plan.explanation.travelHistory}</p>
-                    </div>
-                  )}
-                  {plan.explanation.highlights.length > 0 && (
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">Key highlights</h3>
-                      <ul className="list-disc pl-5 space-y-2">
-                        {plan.explanation.highlights.map((highlight, index) => (
-                          <li key={index} className="text-slate-600 dark:text-slate-300">{highlight}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            )}
           </div>
         </div>
       </div>

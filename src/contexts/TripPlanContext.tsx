@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 /**
  * Type definition for TripPlanData, which represents the data structure for a trip plan.
@@ -27,6 +27,22 @@ export type TripPlanData = {
   };
 };
 
+const STORAGE_KEY = "tripmate_plan_data";
+
+const getStoredPlan = (): TripPlanData => {
+  if (typeof window === "undefined") return defaultState;
+  
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return defaultState;
+
+  try {
+    return JSON.parse(stored) as TripPlanData;
+  } catch (error) {
+    console.error("Error parsing stored plan:", error);
+    return defaultState;
+  }
+};
+
 const defaultState: TripPlanData = {
   destination: "",
   countryLabel: undefined,
@@ -43,15 +59,27 @@ const defaultState: TripPlanData = {
 const TripPlanContext = createContext<{
   plan: TripPlanData;
   setPlan: (data: TripPlanData) => void;
+  resetPlan: () => void;
 }>({
   plan: defaultState,
   setPlan: () => {},
+  resetPlan: () => {},
 });
 
 export function TripPlanProvider({ children }: { children: ReactNode }) {
-  const [plan, setPlan] = useState<TripPlanData>(defaultState);
+  const [plan, setPlanState] = useState<TripPlanData>(() => getStoredPlan());
+
+  const setPlan = useCallback((data: TripPlanData) => {
+    setPlanState(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, []);
+
+  const resetPlan = useCallback(() => {
+    setPlanState(defaultState);
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
   return (
-    <TripPlanContext.Provider value={{ plan, setPlan }}>
+    <TripPlanContext.Provider value={{ plan, setPlan, resetPlan }}>
       {children}
     </TripPlanContext.Provider>
   );

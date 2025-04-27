@@ -32,9 +32,11 @@ import {
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTripPlan } from "@/contexts/TripPlanContext";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { resetPlan } = useTripPlan();
   const { logout } = useAuth();
   const { toggleSidebar, isMobile, setOpenMobile, state } = useSidebar();
 
@@ -154,6 +156,7 @@ export function AppSidebar() {
                   asChild
                   onClick={() => {
                     logout();
+                    resetPlan();
                     signOut({ callbackUrl: "/sign-in" });
                   }}
                 >

@@ -254,7 +254,7 @@ export default function TripDetailsPage() {
           await createTrip({
             userId: user?.userId,
             destinationName: `${tripDetails.destination.city}, ${tripDetails.destination.state || tripDetails.destination.country}`,
-            planDate: new Date().toISOString().split("T")[0],
+            planDate: new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0],
             startDate: new Date(startDate).toISOString().split("T")[0],
             endDate: new Date(endDate).toISOString().split("T")[0],
             tripHighlights: tripDetails.highlights.join("\n"),

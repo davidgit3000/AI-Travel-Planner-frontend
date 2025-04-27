@@ -490,41 +490,70 @@ export default function PlanPage() {
             </Tabs>
           </Card>
 
-          <div className="flex justify-end items-center space-x-4">
-            <Button
-              size="lg"
-              onClick={handleReset}
-              disabled={isGenerating || !isAnyFieldFilled}
-              className={cn(
-                "text-xs sm:text-lg px-8 transition-all duration-200 text-white",
-                isGenerating || !isAnyFieldFilled
-                  ? "bg-red-400 cursor-not-allowed"
-                  : "bg-red-500 hover:bg-red-400 cursor-pointer"
-              )}
-            >
-              Reset All
-            </Button>
+          <div className="space-y-6">
+            <div className="flex justify-end items-center space-x-4">
+              <Button
+                size="lg"
+                onClick={handleReset}
+                disabled={isGenerating || !isAnyFieldFilled}
+                className={cn(
+                  "text-xs sm:text-lg px-8 transition-all duration-200 text-white",
+                  isGenerating || !isAnyFieldFilled
+                    ? "bg-red-400 cursor-not-allowed"
+                    : "bg-red-500 hover:bg-red-400 cursor-pointer"
+                )}
+              >
+                Reset All
+              </Button>
 
-            <Button
-              size="lg"
-              disabled={!isFormValid || isGenerating}
-              onClick={handleGeneratePlan}
-              className={cn(
-                "px-8 text-white text-xs sm:text-lg transition-all duration-200",
-                !isFormValid || isGenerating
-                  ? "bg-slate-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-500 dark:hover:bg-blue-500 cursor-pointer"
-              )}
-            >
-              {isGenerating ? (
-                <div className="flex items-center space-x-2">
-                  <span>Generating Plan</span>
-                  <span className="inline-block animate-pulse">...</span>
+              <Button
+                size="lg"
+                disabled={!isFormValid || isGenerating}
+                onClick={handleGeneratePlan}
+                className={cn(
+                  "px-8 text-white text-xs sm:text-lg transition-all duration-200",
+                  !isFormValid || isGenerating
+                    ? "bg-slate-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-500 dark:hover:bg-blue-500 cursor-pointer"
+                )}
+              >
+                {isGenerating ? (
+                  <div className="flex items-center space-x-2">
+                    <span>Generating Plan</span>
+                    <span className="inline-block animate-pulse">...</span>
+                  </div>
+                ) : (
+                  "Generate Plan"
+                )}
+              </Button>
+            </div>
+
+            {plan.explanation && (
+              <Card className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Why this destination?</h3>
+                    <p className="text-slate-600 dark:text-slate-300">{plan.explanation.summary}</p>
+                  </div>
+                  {plan.explanation.travelHistory && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Based on your travel history</h3>
+                      <p className="text-slate-600 dark:text-slate-300">{plan.explanation.travelHistory}</p>
+                    </div>
+                  )}
+                  {plan.explanation.highlights.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Key highlights</h3>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {plan.explanation.highlights.map((highlight, index) => (
+                          <li key={index} className="text-slate-600 dark:text-slate-300">{highlight}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                "Generate Plan"
-              )}
-            </Button>
+              </Card>
+            )}
           </div>
         </div>
       </div>

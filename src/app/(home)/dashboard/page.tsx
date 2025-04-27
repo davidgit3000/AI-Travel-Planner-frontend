@@ -2,14 +2,26 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getCurrentUser, getUserTrips, type Trip } from "@/app/api/client";
+import {
+  getCurrentUser,
+  getUserTrips,
+  getRecommendedTrip,
+  type Trip,
+} from "@/app/api/client";
 import { differenceInDays } from "date-fns";
 import { formatDate } from "@/utils/helpers";
-import { Loader2 } from "lucide-react";
+import { Loader2, PlusCircle, Sparkles, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTripPlan } from "@/contexts/TripPlanContext";
 
 interface TravelStats {
   totalTrips: number;
@@ -19,6 +31,7 @@ interface TravelStats {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { setPlan } = useTripPlan();
   const [userName, setUserName] = useState<string>("");
   const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
   const [inProgressTrips, setInProgressTrips] = useState<Trip[]>([]);
@@ -28,6 +41,46 @@ export default function DashboardPage() {
     travelDays: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isRecommending, setIsRecommending] = useState(false);
+  const [userId, setUserId] = useState<string>("");
+
+  const handleRecommendTrip = async () => {
+    try {
+      setIsRecommending(true);
+      const recommendation = await getRecommendedTrip(userId);
+
+      // Update the trip plan context with the recommendation
+      setPlan({
+        destination: `${recommendation.data.destination.city}${recommendation.data.destination.state ? `, ${recommendation.data.destination.state}` : ``}, ${recommendation.data.destination.country}`,
+        countryLabel: recommendation.data.destination.country,
+        specificPlace: `${recommendation.data.destination.city}${recommendation.data.destination.state ? `, ${recommendation.data.destination.state}` : ``}, ${recommendation.data.destination.country}`,
+        isSpecificPlace: recommendation.data.isSpecificPlace,
+        startDate: recommendation.data.startDate,
+        endDate: recommendation.data.endDate,
+        travelers: recommendation.data.travelers,
+        accommodations: recommendation.data.accommodations,
+        tripStyles: recommendation.data.tripStyles,
+        dining: recommendation.data.dining,
+        transportation: recommendation.data.transportation,
+        activities: recommendation.data.activities,
+        explanation: recommendation.explanation
+      });
+
+      // Show success message with the first highlight
+      toast.success(
+        recommendation.explanation.highlights[0] || 
+        "Got a perfect destination for you!"
+      );
+
+      // Navigate to the plan page
+      router.push("/plan");
+    } catch (error) {
+      console.error("Error getting trip recommendation:", error);
+      toast.error("Failed to get trip recommendation. Please try again.");
+    } finally {
+      setIsRecommending(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -41,6 +94,7 @@ export default function DashboardPage() {
         }
 
         setUserName(user.fullName.split(" ")[0]); // Get first name
+        setUserId(user.userId); // Store userId for recommendation
 
         const trips = await getUserTrips(user.userId);
 
@@ -52,15 +106,15 @@ export default function DashboardPage() {
         const { inProgress, upcoming } = trips.reduce(
           (acc, trip) => {
             // Parse dates and ensure they're in local timezone
-            const startDate = new Date(trip.startDate + 'T00:00:00');
-            const endDate = new Date(trip.endDate + 'T00:00:00');
-            
+            const startDate = new Date(trip.startDate + "T00:00:00");
+            const endDate = new Date(trip.endDate + "T00:00:00");
+
             console.log("Date comparison:", {
               startDate,
               endDate,
               today,
               rawStart: trip.startDate,
-              rawEnd: trip.endDate
+              rawEnd: trip.endDate,
             });
             if (startDate <= today && endDate >= today) {
               acc.inProgress.push(trip);
@@ -72,13 +126,19 @@ export default function DashboardPage() {
           { inProgress: [] as Trip[], upcoming: [] as Trip[] }
         );
 
-        setInProgressTrips(inProgress.sort((a, b) => 
-          new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
-        ));
-        
-        setUpcomingTrips(upcoming.sort((a, b) => 
-          new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-        ));
+        setInProgressTrips(
+          inProgress.sort(
+            (a, b) =>
+              new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+          )
+        );
+
+        setUpcomingTrips(
+          upcoming.sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          )
+        );
 
         // Calculate stats
         const uniqueCountries = new Set(
@@ -123,28 +183,68 @@ export default function DashboardPage() {
       </h1>
 
       {/* Dashboard Grid */}
-      {/* Quick Actions and Stats Grid */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Quick Actions Card */}
         <Card className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
-          <h2 className="text-sm sm:text-lg font-semibold mb-2 dark:text-slate-100">
-            Quick Actions
-          </h2>
-          <div className="flex flex-col space-y-3">
-            <Button
-              className="bg-blue-600 dark:hover:bg-blue-500 dark:hover:text-slate-100 text-white text-xs sm:text-lg"
-              asChild
-            >
-              <Link href="/plan">Plan New Trip</Link>
-            </Button>
-            <Button
-              variant="outline"
-              className="text-xs sm:text-lg border-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 dark:border-slate-300"
-              asChild
-            >
-              <Link href="/history">View Past Trips</Link>
-            </Button>
-          </div>
+          <CardContent className="p-0">
+            <h2 className="text-xl font-semibold mb-4 dark:text-slate-100">
+              Quick Actions
+            </h2>
+            <div className="space-y-4">
+              <Button
+                // variant="outline"
+                size="lg"
+                className="w-full text-sm xl:text-lg justify-start shadow-md shadow-slate-400 dark:shadow-slate-300"
+                asChild
+              >
+                <Link href="/plan">
+                  <PlusCircle className="mr-2 h-4 w-4 text-green-600 dark:text-green-500" />
+                  Plan a New Trip
+                </Link>
+              </Button>
+              <Button
+                // variant="outline"
+                size="lg"
+                className="w-full text-sm xl:text-lg justify-start shadow-md shadow-slate-400 dark:shadow-slate-300"
+                asChild
+              >
+                <Link href="/history">
+                  <Clock className="mr-2 h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+                  View Past Trips
+                </Link>
+              </Button>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="w-full">
+                      <Button
+                        // variant="outline"
+                        size="lg"
+                        className={`w-full text-sm xl:text-lg justify-start ${stats.totalTrips === 0 ? "opacity-60 bg-slate-700 dark:bg-slate-300" : "cursor-pointer"} shadow-md shadow-slate-400 dark:shadow-slate-300`}
+                        onClick={handleRecommendTrip}
+                        disabled={isRecommending || stats.totalTrips === 0}
+                      >
+                        <Sparkles className="mr-2 h-4 w-4 text-blue-500" />
+                        {isRecommending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Getting Recommendation...
+                          </>
+                        ) : (
+                          "Recommend me a trip"
+                        )}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-[200px]">
+                    {stats.totalTrips === 0
+                      ? "Plan at least one trip to unlock this AI recommendation feature"
+                      : "Get an AI-powered trip recommendation based on your travel history"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </CardContent>
         </Card>
 
         {/* Travel Stats Card */}
@@ -181,14 +281,21 @@ export default function DashboardPage() {
 
       {/* In-progress Trips Section */}
       <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4 dark:text-slate-100">In-progress Trips</h2>
+        <h2 className="text-xl font-semibold mb-4 dark:text-slate-100">
+          In-progress Trips
+        </h2>
         {inProgressTrips.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {inProgressTrips.map((trip) => (
-              <Card key={trip.tripId} className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
+              <Card
+                key={trip.tripId}
+                className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300"
+              >
                 <CardContent className="p-0 space-y-3">
                   <div>
-                    <h3 className="text-lg font-medium mb-1">{trip.destinationName}</h3>
+                    <h3 className="text-lg font-medium mb-1">
+                      {trip.destinationName}
+                    </h3>
                     <div className="space-y-1">
                       <p className="text-sm text-slate-600 dark:text-slate-400">
                         Planned on {formatDate(trip.planDate)}
@@ -201,7 +308,12 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    asChild
+                  >
                     <Link href={`/trips/${trip.tripId}`}>View Details</Link>
                   </Button>
                 </CardContent>
@@ -221,14 +333,21 @@ export default function DashboardPage() {
 
       {/* Upcoming Trips Section */}
       <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4 dark:text-slate-100">Upcoming Trips</h2>
+        <h2 className="text-xl font-semibold mb-4 dark:text-slate-100">
+          Upcoming Trips
+        </h2>
         {upcomingTrips.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {upcomingTrips.map((trip) => (
-              <Card key={trip.tripId} className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300">
+              <Card
+                key={trip.tripId}
+                className="p-4 border-slate-400 shadow-lg shadow-slate-400 dark:border-slate-300"
+              >
                 <CardContent className="p-0 space-y-3">
                   <div>
-                    <h3 className="text-lg font-medium mb-1">{trip.destinationName}</h3>
+                    <h3 className="text-lg font-medium mb-1">
+                      {trip.destinationName}
+                    </h3>
                     <div className="space-y-1">
                       <p className="text-sm text-slate-600 dark:text-slate-400">
                         Planned on {formatDate(trip.planDate)}
@@ -241,7 +360,12 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    asChild
+                  >
                     <Link href={`/trips/${trip.tripId}`}>View Details</Link>
                   </Button>
                 </CardContent>

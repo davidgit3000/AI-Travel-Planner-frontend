@@ -271,7 +271,7 @@ export default function SignInPage() {
 
           <button
             type="submit"
-            disabled={isLoading || Object.keys(errors).length > 0}
+            disabled={isLoading || Object.keys(errors).length > 0 || !formData.email || !formData.password}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all 
                 duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
             aria-label={isLoading ? "Logging in..." : "Login"}

@@ -41,6 +41,30 @@ export interface TripPlanResponse {
   [key: string]: string | undefined; // For any additional fields returned by the API
 }
 
+export interface TripRecommendation {
+  data: {
+    destination: {
+      city: string;
+      state?: string;
+      country: string;
+    };
+    isSpecificPlace: boolean;
+    startDate: string;
+    endDate: string;
+    travelers: number;
+    accommodations: Record<string, boolean>;
+    tripStyles: Record<string, boolean>;
+    dining: Record<string, boolean>;
+    transportation: Record<string, boolean>;
+    activities: Record<string, boolean>;
+  };
+  explanation: {
+    summary: string;
+    travelHistory: string;
+    highlights: string[];
+  };
+}
+
 // Helper function to get auth token from localStorage
 function getAuthToken(): string | null {
   try {
@@ -186,5 +210,37 @@ export async function getTripByTripId(tripId: string): Promise<Trip | null> {
   } catch (error) {
     console.error('Error fetching trip:', error);
     return null;
+  }
+}
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+// Get AI-recommended trip based on user's travel history
+export async function getRecommendedTrip(userId: string): Promise<TripRecommendation> {
+  try {
+    // First, get the user's past trips
+    const pastTrips = await getUserTrips(userId);
+
+    if (pastTrips.length === 0) {
+      console.log('No past trips found');
+      throw new Error('No past trips found');
+    }
+    
+    // Send past trips to the recommendation endpoint
+    const response = await fetch(`${API_BASE_URL}/recommendations/suggest-trip/${userId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(pastTrips),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get trip recommendation');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting trip recommendation:', error);
+    throw error;
   }
 }

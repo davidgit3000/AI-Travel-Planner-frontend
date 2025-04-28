@@ -18,17 +18,7 @@ export default function TripDetails({ tripId }: TripDetailsProps) {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-  
-  // Use multiple fallback images in case one fails
-  const fallbackImages = [
-    "https://ceblog.s3.amazonaws.com/wp-content/uploads/2012/05/20172622/ce-travel.jpg",
-    "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200",
-    "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200",
-    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200"
-  ];
-  
-  const [currentFallbackIndex, setCurrentFallbackIndex] = useState(0);
-  const [imageUrl, setImageUrl] = useState(fallbackImages[0]);
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     const fetchTripDetails = async () => {
@@ -45,13 +35,10 @@ export default function TripDetails({ tripId }: TripDetailsProps) {
 
         // Reset error state when loading new image
         setImageError(false);
-        setCurrentFallbackIndex(0);
         
         // Use the image URL from the database if available
         if (currentTrip.imgLink) {
           setImageUrl(currentTrip.imgLink);
-        } else {
-          setImageUrl(fallbackImages[0]);
         }
       } catch (error) {
         console.error("Error fetching trip details:", error);
@@ -126,15 +113,7 @@ export default function TripDetails({ tripId }: TripDetailsProps) {
                 className="object-cover"
                 priority
                 unoptimized={(imageUrl || "").startsWith("data:")} // Disable optimization for base64 images
-                onError={() => {
-                  // Try the next fallback image if available
-                  if (currentFallbackIndex < fallbackImages.length - 1) {
-                    setCurrentFallbackIndex(prev => prev + 1);
-                    setImageUrl(fallbackImages[currentFallbackIndex + 1]);
-                  } else {
-                    setImageError(true);
-                  }
-                }}
+                onError={() => setImageError(true)}
               />
             )}
           </div>

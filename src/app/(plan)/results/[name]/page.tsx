@@ -30,11 +30,7 @@ interface TripDetails {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200",
-  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200",
-  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200"
-];
+
 
 export default function TripDetailsPage() {
   const loadingSteps = useMemo(
@@ -57,7 +53,6 @@ export default function TripDetailsPage() {
   const router = useRouter();
   const [tripDetails, setTripDetails] = useState<TripDetails | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [currentFallbackIndex, setCurrentFallbackIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
 
   const startDate = formatDate(searchParams.get("from") || "");
@@ -112,8 +107,7 @@ export default function TripDetailsPage() {
             console.log("Image URL: ", destination.imageUrl)
             // Reset error state when loading new image
             setImageError(false);
-            setCurrentFallbackIndex(0);
-            setImageUrl(destination.imageUrl || FALLBACK_IMAGES[0]);
+            setImageUrl(destination.imageUrl || "");
           }
         }
       } catch (error) {
@@ -268,7 +262,7 @@ export default function TripDetailsPage() {
             endDate: new Date(endDate).toISOString().split("T")[0],
             tripHighlights: tripDetails.highlights.join("\n"),
             linkPdf: result.pdfUrl, // If your API returns a PDF URL
-            imgLink: imageUrl || FALLBACK_IMAGES[0],
+            imgLink: imageUrl || "",
           });
         } catch (error) {
           console.error("Error saving trip to database:", error);
@@ -332,20 +326,12 @@ export default function TripDetailsPage() {
             </div>
           ) : (
             <Image
-              src={imageUrl || FALLBACK_IMAGES[currentFallbackIndex]}
+              src={imageUrl}
               alt={title}
               fill
               className="object-cover"
               unoptimized={(imageUrl || "").startsWith("data:")} // Disable optimization for base64 images
-              onError={() => {
-                // Try the next fallback image if available
-                if (currentFallbackIndex < FALLBACK_IMAGES.length - 1) {
-                  setCurrentFallbackIndex(prev => prev + 1);
-                  setImageUrl(FALLBACK_IMAGES[currentFallbackIndex + 1]);
-                } else {
-                  setImageError(true);
-                }
-              }}
+              onError={() => setImageError(true)}
             />
           )}
         </div>

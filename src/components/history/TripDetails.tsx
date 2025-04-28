@@ -83,9 +83,9 @@ export default function TripDetails({ tripId }: TripDetailsProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 gap-8 mb-8">
         {/* Left side - Image */}
-        <div className="h-[400px] md:h-full">
+        <div className="h-[20rem] md:h-[30rem]">
           <div className="relative h-full w-full rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 shadow-lg shadow-slate-400 dark:shadow-slate-600">
             <Image
               src={imageUrl || fallbackImage}

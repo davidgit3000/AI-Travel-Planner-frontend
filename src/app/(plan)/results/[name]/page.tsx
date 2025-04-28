@@ -30,8 +30,11 @@ interface TripDetails {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1935&auto=format&fit=crop";
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200",
+  "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200",
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200"
+];
 
 export default function TripDetailsPage() {
   const loadingSteps = useMemo(
@@ -54,6 +57,8 @@ export default function TripDetailsPage() {
   const router = useRouter();
   const [tripDetails, setTripDetails] = useState<TripDetails | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [currentFallbackIndex, setCurrentFallbackIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
 
   const startDate = formatDate(searchParams.get("from") || "");
   const endDate = formatDate(searchParams.get("to") || "");
@@ -105,7 +110,10 @@ export default function TripDetailsPage() {
           if (destination) {
             setTripDetails(destination);
             console.log("Image URL: ", destination.imageUrl)
-            setImageUrl(destination.imageUrl || FALLBACK_IMAGE);
+            // Reset error state when loading new image
+            setImageError(false);
+            setCurrentFallbackIndex(0);
+            setImageUrl(destination.imageUrl || FALLBACK_IMAGES[0]);
           }
         }
       } catch (error) {
@@ -260,7 +268,7 @@ export default function TripDetailsPage() {
             endDate: new Date(endDate).toISOString().split("T")[0],
             tripHighlights: tripDetails.highlights.join("\n"),
             linkPdf: result.pdfUrl, // If your API returns a PDF URL
-            imgLink: imageUrl || "",
+            imgLink: imageUrl || FALLBACK_IMAGES[0],
           });
         } catch (error) {
           console.error("Error saving trip to database:", error);
@@ -304,13 +312,42 @@ export default function TripDetailsPage() {
         </div>
 
         <div className="w-full shadow-lg shadow-slate-400 dark:shadow-slate-500 aspect-[3/2] bg-gray-300 rounded-lg overflow-hidden relative">
-          <Image
-            src={imageUrl || FALLBACK_IMAGE}
-            alt={title}
-            fill
-            className="object-cover"
-            unoptimized={(imageUrl || "").startsWith("data:")} // Disable optimization for base64 images
-          />
+          {imageError ? (
+            <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+              <svg
+                className="w-12 h-12 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <p className="text-sm">Unable to load image</p>
+            </div>
+          ) : (
+            <Image
+              src={imageUrl || FALLBACK_IMAGES[currentFallbackIndex]}
+              alt={title}
+              fill
+              className="object-cover"
+              unoptimized={(imageUrl || "").startsWith("data:")} // Disable optimization for base64 images
+              onError={() => {
+                // Try the next fallback image if available
+                if (currentFallbackIndex < FALLBACK_IMAGES.length - 1) {
+                  setCurrentFallbackIndex(prev => prev + 1);
+                  setImageUrl(FALLBACK_IMAGES[currentFallbackIndex + 1]);
+                } else {
+                  setImageError(true);
+                }
+              }}
+            />
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-6">

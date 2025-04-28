@@ -104,6 +104,7 @@ export default function TripDetailsPage() {
           });
           if (destination) {
             setTripDetails(destination);
+            // console.log(destination.imageUrl)
             setImageUrl(destination.imageUrl || FALLBACK_IMAGE);
           }
         }

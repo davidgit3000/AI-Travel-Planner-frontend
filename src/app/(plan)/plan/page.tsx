@@ -276,7 +276,7 @@ export default function PlanPage() {
       console.log("Sending request data:", requestData);
 
       const response = await fetch(
-        `${API_BASE_URL}/openai/generate-recommendations`,
+        `${API_BASE_URL}/gemini/generate-recommendations`,
         {
           method: "POST",
           headers: {
